@@ -1,6 +1,10 @@
 import { Request, Response } from "express"
 import Asignacion from "../models/Asignacion"
 import DatosCheckList from "../models/DatosCheckList"
+import Operador from "../models/Operador"
+import Unidad from "../models/Unidad"
+import Caja from "../models/Caja"
+import ImagenesChecklist from "../models/ImagenesChecklist"
 
 export class AsignacionController {
 
@@ -33,7 +37,14 @@ export class AsignacionController {
 
     static getByID = async (req: Request, res: Response) => {
         const asignacion = await Asignacion.findByPk(req.asignacion.id, {
-            include: [DatosCheckList]
+            include: [
+                { model: Unidad, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+                { model: Caja, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+                { model: Operador, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+                { model: DatosCheckList,
+                    include: [{model: ImagenesChecklist}]
+                }
+            ]
         })
         res.json(asignacion)
     }

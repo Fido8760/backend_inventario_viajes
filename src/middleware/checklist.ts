@@ -1,8 +1,21 @@
 import { Request, Response, NextFunction } from "express";
-import { body, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 import { questionType } from "../types";
+import DatosCheckList from "../models/DatosCheckList";
+
+declare global {
+    namespace Express {
+        interface Request {
+            checklist?: DatosCheckList
+        }
+    }
+}
 
 export const validarChecklistInput = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.body || Object.keys(req.body).length === 0) {
+        res.status(400).json({ error: "El cuerpo de la solicitud está vacío." })
+        return
+    }
     await body('respuestas.preguntas')
         .isArray({ min: 1 }).withMessage('Debe haber al menos una pregunta.')
         .run(req);
@@ -50,3 +63,34 @@ export const validarChecklistInput = async (req: Request, res: Response, next: N
     next();
 };
 
+export const validarChecklistId = async (req: Request, res: Response, next: NextFunction) => {
+    await param('checklistId')
+        .isInt().withMessage('ID no válido')
+        .custom(value => value > 0).withMessage('ID no válido').run(req)
+    
+    let errors = validationResult(req)
+    if(!errors.isEmpty()) {
+        res.status(400).json({errors: errors.array()})
+        return
+    }
+    
+    next()
+}
+export const validarChecklistExiste = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { checklistId } = req.params
+        const checklist = await DatosCheckList.findByPk(checklistId)
+
+        if(!checklist) {
+            const error = new Error('Checklist no encontrado')
+            res.status(404).json({error: error.message})
+            return
+        }
+        req.checklist = checklist   
+        next()
+        
+    } catch (error) {
+        //console.log(error)
+        res.status(500).json({error: 'Hubo un error'})
+    }
+}

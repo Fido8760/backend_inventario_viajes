@@ -1,6 +1,7 @@
-import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, ForeignKey, BelongsTo, DataType, HasMany } from 'sequelize-typescript';
 import Asignacion from './Asignacion';
-import { questionType, QuestionType } from '../types';
+import { QuestionType } from '../types';
+import ImagenesChecklist from './ImagenesChecklist';
 
 type PreguntaRespuesta = {
     idPregunta: number;
@@ -26,6 +27,12 @@ class DatosCheckList extends Model {
 
     @Column({ type: DataType.JSON, allowNull: false })
     declare respuestas: RespuestaChecklist;
+
+    @HasMany(() => ImagenesChecklist, {
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+    })
+    declare imagenes: ImagenesChecklist[]
 }
 
 export default DatosCheckList;

@@ -12,17 +12,22 @@
   "author": "Fidel Lopez",
   "license": "ISC",
   "dependencies": {
+    "cloudinary": "^2.6.0",
     "colors": "^1.4.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
+    "formidable": "^3.5.2",
     "morgan": "^1.10.0",
     "mysql2": "^3.13.0",
-    "sequelize-typescript": "^2.1.6"
+    "sequelize-typescript": "^2.1.6",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "@types/formidable": "^3.4.5",
     "@types/morgan": "^1.9.9",
+    "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"

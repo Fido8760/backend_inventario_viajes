@@ -3,12 +3,15 @@ import { AsignacionController } from '../controllers/AsignacionController'
 import { handleInputErrors } from '../middleware/validation'
 import { validarAsignacionId, validarasignacionInput, validarExitenciaViaje } from '../middleware/asignacion'
 import { CheckListController } from '../controllers/CheckListController'
-import { validarChecklistInput } from '../middleware/checklist'
+import { validarChecklistExiste, validarChecklistId, validarChecklistInput } from '../middleware/checklist'
 
 const router = Router()
 
 router.param('asignacionId', validarAsignacionId)
 router.param('asignacionId', validarExitenciaViaje)
+
+router.param('checklistId', validarChecklistId)
+router.param('checklistId', validarChecklistExiste)
 
 router.get('/', 
     AsignacionController.getAll
@@ -42,16 +45,24 @@ router.post('/:asignacionId/checklist',
     CheckListController.create
 )
 
+router.post('/:asignacionId/checklist/:checklistId/image', 
+    CheckListController.uploadImage
+)
+
 router.get('/:asignacionId/checklist/:checklistId',
     CheckListController.getById
 )
 
 router.put('/:asignacionId/checklist/:checklistId',
+    validarChecklistInput,
+    handleInputErrors,
     CheckListController.updateById
 )
 
 router.delete('/:asignacionId/checklist/:checklistId',
     CheckListController.deleteById
 )
+
+
 
 export default router

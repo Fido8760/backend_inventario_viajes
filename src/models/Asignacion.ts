@@ -1,8 +1,9 @@
-import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey, AllowNull } from "sequelize-typescript";
+import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript";
 import Unidad from "./Unidad";
 import Operador from "./Operador";
 import Caja from "./Caja";
 import DatosCheckList from "./DatosCheckList";
+import UsuariosChecklist from "./UsuariosChecklist";
 
 @Table({
     tableName: 'asignaciones'
@@ -42,6 +43,11 @@ class Asignacion extends Model {
         onDelete: 'CASCADE'
     })
     declare checklists: DatosCheckList[]
+
+    @ForeignKey(() => UsuariosChecklist)
+    declare userId: number
+    @BelongsTo(() => UsuariosChecklist)
+    declare usuario: UsuariosChecklist
     
 }
 
