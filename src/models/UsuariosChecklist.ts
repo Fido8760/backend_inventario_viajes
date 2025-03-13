@@ -31,6 +31,11 @@ class UsuariosChecklist extends Model {
     })
     declare rol: number
 
+    @Column({
+        type: DataType.STRING(6)
+    })
+    declare token: string
+
     @HasMany(() => Asignacion, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'

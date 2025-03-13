@@ -25,6 +25,7 @@ export class AsignacionController {
     static create = async (req: Request, res: Response) => {
         try {
             const asignacion = new Asignacion(req.body)
+            asignacion.userId = req.user.id
             await asignacion.save()
             res.status(201).json('Asignación creada Correctamente')
             return

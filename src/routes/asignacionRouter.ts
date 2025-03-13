@@ -4,8 +4,11 @@ import { handleInputErrors } from '../middleware/validation'
 import { validarAsignacionId, validarasignacionInput, validarExitenciaViaje } from '../middleware/asignacion'
 import { CheckListController } from '../controllers/CheckListController'
 import { validarChecklistExiste, validarChecklistId, validarChecklistInput } from '../middleware/checklist'
+import { authenticate } from '../middleware/auth'
 
 const router = Router()
+
+router.use(authenticate)
 
 router.param('asignacionId', validarAsignacionId)
 router.param('asignacionId', validarExitenciaViaje)
