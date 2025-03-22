@@ -15,9 +15,9 @@ export class CheckListController {
             const checklist = new DatosCheckList(req.body)
             checklist.asignacionId = req.asignacion.id
             await checklist.save()
-            res.status(201).json('Revisión Creada Correctamente')
+            res.status(201).json({message: 'Revisión Creada Correctamente', id: checklist.id})
         } catch (error) {
-            //console.log(error)
+            console.log(error)
             res.status(500).json({error: 'Hubo un error'})
         }
     }

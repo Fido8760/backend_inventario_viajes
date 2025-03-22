@@ -19,6 +19,19 @@ router.param('checklistId', validarChecklistExiste)
 router.get('/', 
     AsignacionController.getAll
 )
+
+router.get('/unidades', 
+    AsignacionController.getUnidades
+)
+
+router.get('/cajas', 
+    AsignacionController.getCajas
+)
+
+router.get('/operadores', 
+    AsignacionController.getOperadores
+)
+
 router.post('/', 
     validarasignacionInput,
     handleInputErrors,

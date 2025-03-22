@@ -2,7 +2,8 @@ import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "
 import Asignacion from "./Asignacion";
 
 @Table({
-    tableName: 'operadores'
+    tableName: 'operadores',
+    timestamps: false
 })
 
 class Operador extends Model {

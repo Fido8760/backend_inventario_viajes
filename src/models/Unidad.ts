@@ -6,7 +6,8 @@ import VeriAmbiental from "./VeriAmbiental";
 import VeriFisico from "./VeriFisico";
 
 @Table({
-    tableName: 'unidades'
+    tableName: 'unidades',
+    timestamps: false
 })
 
 class Unidad extends Model {

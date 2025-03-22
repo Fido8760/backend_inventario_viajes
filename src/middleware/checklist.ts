@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { body, param, validationResult } from "express-validator";
-import { questionType } from "../types";
 import DatosCheckList from "../models/DatosCheckList";
 
 declare global {
@@ -12,56 +11,46 @@ declare global {
 }
 
 export const validarChecklistInput = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.body || Object.keys(req.body).length === 0) {
-        res.status(400).json({ error: "El cuerpo de la solicitud está vacío." })
-        return
-    }
-    await body('respuestas.preguntas')
-        .isArray({ min: 1 }).withMessage('Debe haber al menos una pregunta.')
+    await body("respuestas.preguntas")
+        .isArray({min: 1}).withMessage("Debe haber al menos una pregunta").run(req)
+
+    await body("respuestas.preguntas.*.respuesta")
+        .custom((value, { req, path }) => {
+            const index = path.match(/\d+/)?.[0];
+            if (index === undefined) return true;
+
+            const pregunta = req.body.respuestas.preguntas[parseInt(index)];
+            
+            // 1. Validación para 'si_no'
+            if (pregunta.tipo === "si_no") {
+                if (!['si', 'no'].includes(value?.toLowerCase()?.trim())) {
+                    throw new Error(`Solo se permiten valores 'si' o 'no' en "${pregunta.pregunta}"`);
+                }
+                return true;
+            }
+
+            // 2. Permitir vacío solo para tipo 'texto'
+            if (pregunta.tipo === "texto") {
+                return true; // Acepta null, "" o cualquier valor
+            }
+
+            // 3. Validar otros tipos (numero, opciones, etc.)
+            if (value === null || value === "") {
+                throw new Error(`La respuesta en "${pregunta.pregunta}" no puede estar vacía`);
+            }
+
+            return true;
+        })
         .run(req);
 
-    await Promise.all(
-        req.body.respuestas.preguntas.map((pregunta: any, index: number) =>
-            body(`respuestas.preguntas[${index}].respuesta`)
-                .custom((value, { req }) => {
-                    const tipo = req.body.respuestas.preguntas[index].tipo;
+    let errors = validationResult(req)
+    if(!errors.isEmpty()) {
+        res.status(400).json({errors: errors.array()})
+        return
+    }
 
-                    // Validar que el tipo sea válido
-                    if (!Object.values(questionType).includes(tipo)) {
-                        throw new Error(`El tipo '${tipo}' no es válido.`);
-                    }
-
-                    // Validar que las respuestas coincidan con el tipo
-                    if (tipo !== questionType.TEXT && (value === "" || value === null || value === undefined)) {
-                        throw new Error(`${req.body.respuestas.preguntas[index].pregunta} no puede estar vacía.`);
-                    }
-
-                    if (tipo === questionType.NUMBER && typeof value !== 'number') {
-                        throw new Error(`${req.body.respuestas.preguntas[index].pregunta} debe ser un número.`);
-                    }
-
-                    if (tipo === questionType.YES_NO && typeof value !== 'boolean') {
-                        throw new Error(`${req.body.respuestas.preguntas[index].pregunta} debe ser SI o NO.`);
-                    }
-
-                    if (tipo === questionType.OPTIONS) {
-                        const opcionesValidas = ["BUENO", "REGULAR", "MALO"];
-                    
-                        if (typeof value !== "string" || !opcionesValidas.includes(value.toUpperCase())) {
-                            throw new Error(
-                                `${req.body.respuestas.preguntas[index].pregunta} debe ser 'BUENO', 'REGULAR' o 'MALO'.`
-                            );
-                        }
-                    }                    
-
-                    return true;
-                })
-                .run(req)
-        )
-    );
-
-    next();
-};
+    next()
+}
 
 export const validarChecklistId = async (req: Request, res: Response, next: NextFunction) => {
     await param('checklistId')

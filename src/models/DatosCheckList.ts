@@ -25,7 +25,7 @@ class DatosCheckList extends Model {
     @BelongsTo(() => Asignacion)
     declare asignacion: Asignacion;
 
-    @Column({ type: DataType.JSON, allowNull: false })
+    @Column({ type: DataType.JSON, allowNull: true })
     declare respuestas: RespuestaChecklist;
 
     @HasMany(() => ImagenesChecklist, {
