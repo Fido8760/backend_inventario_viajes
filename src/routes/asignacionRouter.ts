@@ -3,7 +3,7 @@ import { AsignacionController } from '../controllers/AsignacionController'
 import { handleInputErrors } from '../middleware/validation'
 import { validarAsignacionId, validarasignacionInput, validarExitenciaViaje } from '../middleware/asignacion'
 import { CheckListController } from '../controllers/CheckListController'
-import { validarChecklistExiste, validarChecklistId, validarChecklistInput } from '../middleware/checklist'
+import { perteneceAAsignacion, validarChecklistExiste, validarChecklistId, validarChecklistInput } from '../middleware/checklist'
 import { authenticate } from '../middleware/auth'
 
 const router = Router()
@@ -15,6 +15,7 @@ router.param('asignacionId', validarExitenciaViaje)
 
 router.param('checklistId', validarChecklistId)
 router.param('checklistId', validarChecklistExiste)
+router.param('checklistId', perteneceAAsignacion)
 
 router.get('/', 
     AsignacionController.getAll

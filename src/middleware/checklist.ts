@@ -83,3 +83,13 @@ export const validarChecklistExiste = async (req: Request, res: Response, next: 
         res.status(500).json({error: 'Hubo un error'})
     }
 }
+
+export const perteneceAAsignacion = async (req: Request, res: Response, next: NextFunction) => {
+    if(req.asignacion.id !== req.checklist.asignacionId) {
+        const error = new Error('Acción no válida')
+        res.status(403).json({error: error.message})
+        return
+    }
+
+    next()
+}

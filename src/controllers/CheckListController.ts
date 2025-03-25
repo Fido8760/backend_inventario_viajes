@@ -46,9 +46,12 @@ export class CheckListController {
                                 urlImagen: result.secure_url,
                                 checklistId: checklistId
                             })
-                            return res.status(201).json({ message: "Imagen subida con éxito"});
+                            return res.status(201).json({ 
+                                message: "Imagen subida con éxito",
+                                imageUrl: result.secure_url
+                            });
                         }
-                })
+                    })
             })
         } catch (error) {
             //console.log(error)
