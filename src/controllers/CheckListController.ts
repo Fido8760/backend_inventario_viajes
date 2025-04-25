@@ -6,19 +6,31 @@ import cloudinary from '../config/cloudinary'
 import ImagenesChecklist from "../models/ImagenesChecklist"
 
 export class CheckListController {
-    static getAll = async (req: Request, res: Response) => {
-        res.json('desde CheckListController.getall')
-    }
 
     static create = async (req: Request, res: Response) => {
         try {
-            const checklist = new DatosCheckList(req.body)
-            checklist.asignacionId = req.asignacion.id
-            await checklist.save()
-            res.status(201).json({message: 'Revisión Creada Correctamente', id: checklist.id})
+            const { checklist } = req.body;
+    
+            if (!checklist) {
+                res.status(400).json({ error: "El checklist es requerido" });
+                return; // ✅
+            }
+    
+            const nuevoChecklist = await DatosCheckList.create({
+                respuestas: checklist,
+                asignacionId: req.asignacion.id,
+            });
+    
+            res.status(201).json({ 
+                message: 'Revisión Creada Correctamente', 
+                id: nuevoChecklist.id 
+            });
+            return; // ✅
+    
         } catch (error) {
-            console.log(error)
-            res.status(500).json({error: 'Hubo un error'})
+            console.error("Error en ChecklistController:", error);
+            res.status(500).json({ error: 'Hubo un error' });
+            return; // ✅
         }
     }
 

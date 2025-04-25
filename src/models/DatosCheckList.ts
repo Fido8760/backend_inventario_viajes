@@ -3,29 +3,36 @@ import Asignacion from './Asignacion';
 import { QuestionType } from '../types';
 import ImagenesChecklist from './ImagenesChecklist';
 
-type PreguntaRespuesta = {
+export type PreguntaRespuesta = {
     idPregunta: number;
     pregunta: string;
-    respuesta: boolean | string | number;
-    tipo: QuestionType;  // 🔹 Usamos el tipo predefinido
+    respuesta: string | number;
+    tipo: QuestionType;
+    aplicaA?: "todos" | "tractocamion"; // Opcional
+};
+
+export type SeccionChecklist = {
+    nombre: string; // Ej: "Generales", "Cabina", etc.
+    preguntas: PreguntaRespuesta[];
 }
 
-type RespuestaChecklist = {
-    preguntas: PreguntaRespuesta[];
+export type RespuestaChecklist = {
+    secciones: SeccionChecklist[];
 }
 
 @Table({
     tableName: 'checklist_data'
 })
+
 class DatosCheckList extends Model {
     @ForeignKey(() => Asignacion)
-    @Column({ type: DataType.INTEGER, allowNull: true })
-    declare asignacionId: number | null;
+    @Column({ type: DataType.INTEGER, allowNull: false })
+    declare asignacionId: number
 
     @BelongsTo(() => Asignacion)
     declare asignacion: Asignacion;
 
-    @Column({ type: DataType.JSON, allowNull: true })
+    @Column({ type: DataType.JSON, allowNull: false })
     declare respuestas: RespuestaChecklist;
 
     @HasMany(() => ImagenesChecklist, {

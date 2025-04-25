@@ -10,8 +10,13 @@ import UsuariosChecklist from "../models/UsuariosChecklist"
 export class AsignacionController {
 
     static getAll = async (req: Request, res: Response) => {
+
+        const {skip, take} = req.pagination
+
         try {
-            const asignaciones = await Asignacion.findAll({
+            const asignaciones = await Asignacion.findAndCountAll({
+                limit: take,
+                offset: skip,
                 order: [
                     ['createdAt', 'DESC']
                 ],
@@ -36,7 +41,6 @@ export class AsignacionController {
             })
             res.json(asignaciones)
         } catch (error) {
-            //console.log(error)
             res.status(500).json({error: 'Hubo un error'})
         }
     }
@@ -78,10 +82,8 @@ export class AsignacionController {
             asignacion.userId = req.user.id
             await asignacion.save()
             res.status(201).json({message: 'Asignación creada Correctamente', id: asignacion.id})
-            return
             
         } catch (error) {
-            //console.log(error)
             res.status(500).json({error: 'Hubo un error'})
         }
     }
@@ -103,7 +105,7 @@ export class AsignacionController {
 
     static updateByID = async (req: Request, res: Response) => {
         await req.asignacion.update(req.body)
-        res.status(201).json('Viaje Actualizado Correctamente')
+        res.status(200).json('Viaje Actualizado Correctamente')
     }
 
     static deleteById = async (req: Request, res: Response) => {

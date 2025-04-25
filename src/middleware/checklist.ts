@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { body, param, validationResult } from "express-validator";
-import DatosCheckList from "../models/DatosCheckList";
+import DatosCheckList, { PreguntaRespuesta, SeccionChecklist } from "../models/DatosCheckList";
+import { questionType } from "../types";
+import Asignacion from "../models/Asignacion";
+import Unidad from "../models/Unidad";
 
 declare global {
     namespace Express {
@@ -11,46 +14,110 @@ declare global {
 }
 
 export const validarChecklistInput = async (req: Request, res: Response, next: NextFunction) => {
-    await body("respuestas.preguntas")
-        .isArray({min: 1}).withMessage("Debe haber al menos una pregunta").run(req)
+    try {
+        await body("checklist")
+            .exists().withMessage("El campo 'checklist' es requerido")
+            .isObject().withMessage("El checklist debe ser un objeto").run(req);
 
-    await body("respuestas.preguntas.*.respuesta")
-        .custom((value, { req, path }) => {
-            const index = path.match(/\d+/)?.[0];
-            if (index === undefined) return true;
+        await body("checklist.secciones")
+            .exists().withMessage("El campo 'secciones' es requerido")
+            .isArray({ min: 1 }).withMessage("Debe haber al menos una sección").run(req);
 
-            const pregunta = req.body.respuestas.preguntas[parseInt(index)];
-            
-            // 1. Validación para 'si_no'
-            if (pregunta.tipo === "si_no") {
-                if (!['si', 'no'].includes(value?.toLowerCase()?.trim())) {
-                    throw new Error(`Solo se permiten valores 'si' o 'no' en "${pregunta.pregunta}"`);
+        let errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({ errors: errors.array() });
+            return 
+        }
+
+        if (!req.params.asignacionId) {
+            res.status(400).json({ error: "asignacionId es requerido" });
+            return 
+        }
+
+        const { secciones } = req.body.checklist;
+
+        const asignacion = await Asignacion.findByPk(req.params.asignacionId, {
+            include: [{ model: Unidad }]
+        });
+
+        if (!asignacion) {
+            res.status(404).json({ error: "Asignación no encontrada" });
+            return 
+        }
+
+        for (let i = 0; i < secciones.length; i++) {
+            const seccion = secciones[i];
+            const seccionPrefix = `checklist.secciones[${i}]`;
+
+            await body(`${seccionPrefix}.nombre`)
+                .isString().withMessage("El nombre de la sección debe ser un texto")
+                .notEmpty().withMessage("El nombre de la sección no puede estar vacío")
+                .run(req);
+
+            await body(`${seccionPrefix}.preguntas`)
+                .isArray({ min: 1 }).withMessage("Cada sección debe tener al menos una pregunta")
+                .run(req);
+
+            for (let j = 0; j < seccion.preguntas.length; j++) {
+                const pregunta = seccion.preguntas[j];
+                const preguntaPrefix = `${seccionPrefix}.preguntas[${j}]`;
+
+                await body(`${preguntaPrefix}.idPregunta`)
+                    .isInt().withMessage("ID de pregunta inválido")
+                    .notEmpty().withMessage("El ID de pregunta es obligatorio").run(req);
+
+                await body(`${preguntaPrefix}.pregunta`)
+                    .isString().withMessage("La pregunta debe ser un texto")
+                    .notEmpty().withMessage("La pregunta no puede estar vacía").run(req);
+
+                await body(`${preguntaPrefix}.tipo`)
+                    .isIn(Object.values(questionType)).withMessage("Tipo de pregunta no válido")
+                    .run(req);
+
+                switch (pregunta.tipo) {
+                    case questionType.NUMBER:
+                        await body(`${preguntaPrefix}.respuesta`)
+                            .isNumeric().withMessage("La respuesta debe ser un número").run(req);
+                        break;
+
+                    case questionType.YES_NO:
+                        await body(`${preguntaPrefix}.respuesta`)
+                            .isIn(["si", "no"]).withMessage("La respuesta debe ser 'si' o 'no'").run(req);
+                        break;
+
+                    case questionType.OPTIONS:
+                        await body(`${preguntaPrefix}.respuesta`)
+                            .isIn(["BUENO", "MALO", "REGULAR"]).withMessage("Respuesta no válida").run(req);
+                        break;
+
+                    case questionType.TEXT:
+                        await body(`${preguntaPrefix}.respuesta`)
+                            .optional()
+                            .isString().withMessage("La respuesta debe ser un texto").run(req);
+                        break;
                 }
-                return true;
+
+                if (pregunta.aplicaA === "tractocamion" && asignacion.unidad.tipo_unidad !== "TRACTOCAMION") {
+                    await body(`${preguntaPrefix}.aplicaA`)
+                        .custom(() => false)
+                        .withMessage("Esta pregunta solo aplica a tractocamiones").run(req);
+                }
             }
+        }
 
-            // 2. Permitir vacío solo para tipo 'texto'
-            if (pregunta.tipo === "texto") {
-                return true; // Acepta null, "" o cualquier valor
-            }
+        const finalErrors = validationResult(req);
+        if (!finalErrors.isEmpty()) {
+            res.status(400).json({ errors: finalErrors.array() });
+            return 
+        }
 
-            // 3. Validar otros tipos (numero, opciones, etc.)
-            if (value === null || value === "") {
-                throw new Error(`La respuesta en "${pregunta.pregunta}" no puede estar vacía`);
-            }
-
-            return true;
-        })
-        .run(req);
-
-    let errors = validationResult(req)
-    if(!errors.isEmpty()) {
-        res.status(400).json({errors: errors.array()})
-        return
+        next();
+    } catch (error) {
+        console.error("Error en validarChecklistInput:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
     }
+};
 
-    next()
-}
 
 export const validarChecklistId = async (req: Request, res: Response, next: NextFunction) => {
     await param('checklistId')

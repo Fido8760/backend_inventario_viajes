@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { AsignacionController } from '../controllers/AsignacionController'
 import { handleInputErrors } from '../middleware/validation'
-import { validarAsignacionId, validarasignacionInput, validarExitenciaViaje } from '../middleware/asignacion'
+import { validarAsignacionId, validarasignacionInput, validarExitenciaViaje, validarParamOpcional } from '../middleware/asignacion'
 import { CheckListController } from '../controllers/CheckListController'
 import { perteneceAAsignacion, validarChecklistExiste, validarChecklistId, validarChecklistInput } from '../middleware/checklist'
 import { authenticate } from '../middleware/auth'
@@ -18,6 +18,7 @@ router.param('checklistId', validarChecklistExiste)
 router.param('checklistId', perteneceAAsignacion)
 
 router.get('/', 
+    validarParamOpcional,
     AsignacionController.getAll
 )
 
@@ -58,7 +59,6 @@ router.delete('/:asignacionId',
 
 router.post('/:asignacionId/checklist',
     validarChecklistInput,
-    handleInputErrors,
     CheckListController.create
 )
 

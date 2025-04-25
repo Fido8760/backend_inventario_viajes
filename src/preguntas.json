@@ -1,491 +1,643 @@
 {
-    "respuestas": {
-        "preguntas": [
-            {
-                "idPregunta": 1,
-                "pregunta": "Odometro",
-                "respuesta": 5000,
-                "tipo": "numero"
-            },
-            {
-                "idPregunta": 2,
-                "pregunta": "Tarjeta Compustible",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 3,
-                "pregunta": "Luces Delanteras",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 4,
-                "pregunta": "Intermitentes",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 5,
-                "pregunta": "Direccionales",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 6,
-                "pregunta": "Luz cabina",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 7,
-                "pregunta": "Stop Unidad",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 8,
-                "pregunta": "Luz Trasera",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 9,
-                "pregunta": "Indicadores Operativos",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 10,
-                "pregunta": "Comentarios 1",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 11,
-                "pregunta": "Semiremolque Cuartos",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 12,
-                "pregunta": "Semiremolque Luces",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 13,
-                "pregunta": "Semiremolque Reflejante",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 14,
-                "pregunta": "Comentarios 2",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 15,
-                "pregunta": "Cabina Ext Cofre",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 16,
-                "pregunta": "Cabina Ext Paravientos",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 17,
-                "pregunta": "Cabina Ext PuertaIzq",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 18,
-                "pregunta": "Cabina Ext PuertaDer",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 19,
-                "pregunta": "Cabina Ext Camarote",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 20,
-                "pregunta": "Cabina Ext Defensa",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 21,
-                "pregunta": "Cabina Ext Extractor",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 22,
-                "pregunta": "Cabina Int Tablero",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 23,
-                "pregunta": "Cabina Int Freno de Servicio",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 24,
-                "pregunta": "Cabina Int Cinturon Copiloto",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 25,
-                "pregunta": "Cabina Int Cinturon Operador",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 26,
-                "pregunta": "Cabina Int Orden y Limpieza",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 27,
-                "pregunta": "Cabina Int Freno de Mano",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 28,
-                "pregunta": "Cabina Int Espejo Restrovisor Central",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 29,
-                "pregunta": "Cabina Int Auto Stereo",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 30,
-                "pregunta": "Comentarios 3 ",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 31,
-                "pregunta": "Semiremolque Costado Derecho",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 32,
-                "pregunta": "Semiremolque Puertas",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 33,
-                "pregunta": "Semiremolque Costado Izquierdo",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 34,
-                "pregunta": "Semiremolque Bisagras",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 35,
-                "pregunta": "Comentarios 4",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 36,
-                "pregunta": "Tapiceria Asientos Conductor",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 37,
-                "pregunta": "Tapiceria Asiento Copiloto",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 38,
-                "pregunta": "Tapiceria Colchon",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 39,
-                "pregunta": "Tapiceria Techo",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 40,
-                "pregunta": "Tapiceria Piso",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 41,
-                "pregunta": "Comentarios 5",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 42,
-                "pregunta": "Llantas Unidad Delanteras",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 43,
-                "pregunta": "Llantas Unidad Capuchones",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 44,
-                "pregunta": "Llantas Unidad Loderas",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 45,
-                "pregunta": "Llantas Unidad Traseras",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 46,
-                "pregunta": "Llantas Unidad Rines",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 47,
-                "pregunta": "Comentarios 6",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 48,
-                "pregunta": "Llantas Semiremolque Delanteros",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 49,
-                "pregunta": "Llantas Semiremolque Traseros",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 50,
-                "pregunta": "Llantas Semiremolque Rines",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 51,
-                "pregunta": "Comentarios 7",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 52,
-                "pregunta": "AccSeguridad Conos",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 53,
-                "pregunta": "AccSeguridad Extintor",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 54,
-                "pregunta": "AccSeguridad Alarma Retroceso",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 55,
-                "pregunta": "AccSeguridad Claxon",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 56,
-                "pregunta": "Comentarios 8",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 57,
-                "pregunta": "TapasOtros Tapon Gasolina",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 58,
-                "pregunta": "TapasOtros Baterias",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 59,
-                "pregunta": "TapasOtros Herramienta Basica",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 60,
-                "pregunta": "TapasOtros Rampa Hidraulica",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 61,
-                "pregunta": "Comentarios 9",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 62,
-                "pregunta": "Semiremolque 7 vias",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 63,
-                "pregunta": "Semiremolque Manivelas",
-                "respuesta": "si",
-                "tipo": "si_no"
-            },
-            {
-                "idPregunta": 64,
-                "pregunta": "Comentarios 10",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 65,
-                "pregunta": "Cristaleria Parabrisas",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 66,
-                "pregunta": "Cristaleria Ventana Puerta Der",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 67,
-                "pregunta": "Cristaleria Ventana Puerta Izq",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 68,
-                "pregunta": "Cristaleria Retrovisor Der",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 69,
-                "pregunta": "Cristaleria Retrovisor Izq",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 70,
-                "pregunta": "Cristaleria Medallon",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 71,
-                "pregunta": "Cristaleria Quemacocos",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 72,
-                "pregunta": "Comentarios 11",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 73,
-                "pregunta": "Rotulacion Unidad Para Vientos",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 74,
-                "pregunta": "Rotulacion Unidad Puerta Operador",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 75,
-                "pregunta": "Rotulacion Unidad Puerta Copiloto",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 76,
-                "pregunta": "Comentarios 12",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 77,
-                "pregunta": "Rotulacion Semiremolque Costado Derecho",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 78,
-                "pregunta": "Rotulacion Semiremolque Costado Izquierdo",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 79,
-                "pregunta": "Rotulacion Semiremolque Puerta",
-                "respuesta": "BUENO",
-                "tipo": "opciones"
-            },
-            {
-                "idPregunta": 80,
-                "pregunta": "Comentarios 13 ",
-                "respuesta": "",
-                "tipo": "texto"
-            },
-            {
-                "idPregunta": 81,
-                "pregunta": "Comentarios Generales",
-                "respuesta": "",
-                "tipo": "texto"
+    "checklist": {
+        "secciones": [
+            {
+                "nombre": "Generales",
+                "preguntas": [
+                    {
+                        "idPregunta": 1,
+                        "pregunta": "¿Odometro actual?",
+                        "respuesta": 5000,
+                        "tipo": "numero",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 2,
+                        "pregunta": "¿Tarjeta Compustible?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 3,
+                        "pregunta": "Luces Delanteras",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 4,
+                        "pregunta": "Intermitentes",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 5,
+                        "pregunta": "Direccionales",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 6,
+                        "pregunta": "Luz cabina",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 7,
+                        "pregunta": "Stop Unidad",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 8,
+                        "pregunta": "Luz Trasera",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 9,
+                        "pregunta": "Indicadores Operativos",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 10,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+  
+                ]
+            },
+            {
+                "nombre": "Semiremolque Generales",
+                "preguntas": [
+                    {
+                        "idPregunta": 11,
+                        "pregunta": "Semiremolque Cuartos",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 12,
+                        "pregunta": "Semiremolque Luces",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 13,
+                        "pregunta": "Semiremolque Reflejante",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 14,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "tractocamion"
+                    }
+                ]
+            },
+            {
+                "nombre": "Cabina",
+                "preguntas": [
+                    {
+                        "idPregunta": 15,
+                        "pregunta": "¿Cabina exterior: Cofre en buen estado?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 16,
+                        "pregunta": "¿Cabina exterior: Paravientos en buen estado?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 17,
+                        "pregunta": "¿Cabina exterior: puerta izquierda?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 18,
+                        "pregunta": "¿Cabina exterior: Puerta Derecha?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 19,
+                        "pregunta": "¿Cabina exterior: Camarote?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 20,
+                        "pregunta": "¿Cabina exterior: Defensa?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 21,
+                        "pregunta": "¿Cabina exterior: Extractor?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 22,
+                        "pregunta": "¿Cabina Interior: Tablero?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 23,
+                        "pregunta": "¿Cabina Interior: Freno de Servicio?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 24,
+                        "pregunta": "¿Cabina Interior: Cinturon Copiloto?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 25,
+                        "pregunta": "¿Cabina Interior: Cinturon Operador?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 26,
+                        "pregunta": "¿Cabina Interior: Orden y Limpieza?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 27,
+                        "pregunta": "¿Cabina Interior: Freno de Mano?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 28,
+                        "pregunta": "¿Cabina Interior: Espejo Retrovisor Central?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 29,
+                        "pregunta": "¿Cabina Interior: Auto Stereo?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 30,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+                ]
+            },
+            {
+                "nombre": "Semiremolque Estetica",
+                "preguntas": [
+                    {
+                        "idPregunta": 31,
+                        "pregunta": "Semiremolque Costado Derecho",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 32,
+                        "pregunta": "Semiremolque Puertas",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 33,
+                        "pregunta": "Semiremolque Costado Izquierdo",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 34,
+                        "pregunta": "Semiremolque Bisagras",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 35,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "tractocamion"
+                    }
+                ]
+            },
+            {
+                "nombre": "Tapicería",
+                "preguntas": [
+                    {
+                        "idPregunta": 36,
+                        "pregunta": "Tapiceria Asientos Conductor",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 37,
+                        "pregunta": "Tapiceria Asiento Copiloto",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 38,
+                        "pregunta": "Tapiceria Colchon",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 39,
+                        "pregunta": "Tapiceria Techo",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 40,
+                        "pregunta": "Tapiceria Piso",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 41,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+                ]
+            },
+            {
+                "nombre": "Llantas Unidad",
+                "preguntas": [
+                    {
+                        "idPregunta": 42,
+                        "pregunta": "Condición de Llantas delanteras de la Unidad",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 43,
+                        "pregunta": "Estado de los capuchones",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 44,
+                        "pregunta": "Estado de las Loderas",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 45,
+                        "pregunta": "Condición de Llantas traseras de la Unidad",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 46,
+                        "pregunta": "Estado de los rines de la unidad",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 47,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+                ]
+            },
+            {
+                "nombre": "Llantas Semiremolque",
+                "preguntas": [
+                    {
+                        "idPregunta": 48,
+                        "pregunta": "Condición de Llantas traseras del Semiremolque",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 49,
+                        "pregunta": "Condición de Llantas delanteras del Semiremolque",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 50,
+                        "pregunta": "Estado de los rines del Semiremolque",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 51,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "tractocamion"
+                    }
+                ]
+            },
+            {
+                "nombre": "Accesorios",
+                "preguntas": [
+                    {
+                        "idPregunta": 52,
+                        "pregunta": "¿Conos de seguridad?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 53,
+                        "pregunta": "¿Extintor?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 54,
+                        "pregunta": "¿Alarma Retroceso?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 55,
+                        "pregunta": "¿Claxon?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 56,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+                ]
+            },
+            {
+                "nombre": "Accesorios Otros",
+                "preguntas": [
+                    {
+                        "idPregunta": 57,
+                        "pregunta": "¿Tapon Gasolina?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 58,
+                        "pregunta": "¿Baterias?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 59,
+                        "pregunta": "¿Herramienta Básica?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 60,
+                        "pregunta": "¿Rampa hidráulica?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 61,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+                ]
+            },
+            {
+                "nombre": "Accesorios Semiremolque",
+                "preguntas": [
+                     {
+                        "idPregunta": 62,
+                        "pregunta": "¿7 vias?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 63,
+                        "pregunta": "¿Manivelas?",
+                        "respuesta": "si",
+                        "tipo": "si_no",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 64,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "tractocamion"
+                    }
+                ]
+            },
+            {
+                "nombre": "Cristalería",
+                "preguntas": [
+                     {
+                        "idPregunta": 65,
+                        "pregunta": "¿Condición del parabrisas?",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 66,
+                        "pregunta": "Condición Ventana Puerta Derecha",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 67,
+                        "pregunta": "Condición Ventana Puerta Izquierda",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 68,
+                        "pregunta": "Condición Retrovisor Derecho",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 69,
+                        "pregunta": "Condición Retrovisor Izquierdo",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 70,
+                        "pregunta": "Condición Medallón",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 71,
+                        "pregunta": "Condición Quemacocos",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 72,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+                ]
+            },
+            {
+                "nombre": "Rotulación",
+                "preguntas": [
+                     {
+                        "idPregunta": 73,
+                        "pregunta": "Rotulacion Unidad Paravientos",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 74,
+                        "pregunta": "Rotulacion Unidad Puerta Operador",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 75,
+                        "pregunta": "Rotulacion Unidad Puerta Copiloto",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "todos"
+                    },
+                    {
+                        "idPregunta": 76,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+                ]
+            },
+            {
+                "nombre": "Rotulación Semiremolque",
+                "preguntas": [
+                    {
+                        "idPregunta": 77,
+                        "pregunta": "Rotulacion Semiremolque Costado Derecho",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 78,
+                        "pregunta": "Rotulacion Semiremolque Costado Izquierdo",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 79,
+                        "pregunta": "Rotulacion Semiremolque Puerta",
+                        "respuesta": "BUENO",
+                        "tipo": "opciones",
+                        "aplicaA": "tractocamion"
+                    },
+                    {
+                        "idPregunta": 80,
+                        "pregunta": "Comentarios",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "tractocamion"
+                    }
+                ]
+            },
+            {
+                "nombre": "Comentarios Finales",
+                "preguntas": [
+                    {
+                        "idPregunta": 81,
+                        "pregunta": "Comentarios Generales",
+                        "respuesta": "",
+                        "tipo": "texto",
+                        "aplicaA": "todos"
+                    }
+                ]
             }
         ]
     }
