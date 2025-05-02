@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { body, param, validationResult } from "express-validator";
-import DatosCheckList, { PreguntaRespuesta, SeccionChecklist } from "../models/DatosCheckList";
+import DatosCheckList from "../models/DatosCheckList";
 import { questionType } from "../types";
 import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";

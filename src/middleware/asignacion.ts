@@ -31,7 +31,15 @@ export const validarAsignacionId = async (req: Request, res: Response, next: Nex
 export const validarExitenciaViaje = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { asignacionId } = req.params
-        const asignacion = await Asignacion.findByPk(asignacionId)
+        const asignacion = await Asignacion.findByPk(asignacionId, {
+            include: [
+                {
+                    model: Unidad,
+                    attributes: ['id', 'tipo_unidad']
+
+                }
+            ]
+        })
         if(!asignacion) {
             const error = new Error('Viaje Asignado no encontrado')
             res.status(404).json({error: error.message})
