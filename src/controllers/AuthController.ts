@@ -16,9 +16,11 @@ export class AuthController {
         if(userExists) {
             const error = new Error('Un usuario ya está registrado con ese email')
             res.status(409).json({error: error.message})
+            return
         }
         try {
             const user = new UsuariosChecklist(req.body)
+
             user.password = await hashPassword(password)
             await user.save()
             res.json('Cuenta Creada Correctamente')
@@ -105,6 +107,70 @@ export class AuthController {
     }
 
     static user = async (req: Request, res: Response) => {
-        res.json(req.user)
+        res.json(req.authenticatedUser)
+    }
+
+    static getUsers = async (req: Request, res: Response) => {
+        try {
+            const users = await UsuariosChecklist.findAll({
+                attributes: ['id', 'name', 'lastname', 'email', 'rol']
+            })
+            res.json(users)
+        } catch (error) {
+            res.status(500).json({error: 'Hubo un error'})
+            //console.log(error)
+        }
+    }
+
+    static getUserById = async (req: Request, res: Response) => {
+        try {
+            res.json(req.user)
+        } catch (error) {
+            res.status(500).json({error: 'Hubo un error'})
+        }
+    }
+    
+    static updateUser = async (req: Request, res: Response) => {
+        const {userId} = req.params
+        const { email } = req.body
+        //prevenir duplicados
+        const userExists = await UsuariosChecklist.findOne({
+            where: {email}
+        })
+
+        if(userExists && userExists.id !== parseInt(userId)) {
+            const error = new Error('Un usuario ya está registrado con ese email')
+            res.status(409).json({error: error.message})
+            return
+        }
+        try {
+            const user = req.user!
+            user.name = req.body.name || user.name;
+            user.lastname = req.body.lastname || user.lastname;
+            user.email = req.body.email || user.email;
+            if (req.body.rol !== undefined) { 
+                user.rol = req.body.rol;
+            }
+
+            await user.save();
+            res.json('Usuario Actualizado Correctamente')
+            
+        } catch (error) {
+            //console.log(error)
+            res.status(500).json({error: 'Hubo un error'})
+        }
+    }
+
+    static deleteUser = async (req: Request, res: Response) => {
+        
+        const user = req.user!
+        try {
+            await user.destroy()
+            res.json('Usuario eliminado corretamente')
+            
+        } catch (error) {
+            //console.log(error)
+            res.status(500).json({error: 'Hubo un error'})
+        }
     }
 }

@@ -13,7 +13,7 @@ export class CheckListController {
     
             if (!checklist) {
                 res.status(400).json({ error: "El checklist es requerido" });
-                return; // ✅
+                return; 
             }
     
             const nuevoChecklist = await DatosCheckList.create({
@@ -25,12 +25,12 @@ export class CheckListController {
                 message: 'Revisión Creada Correctamente', 
                 id: nuevoChecklist.id 
             });
-            return; // ✅
+            return;
     
         } catch (error) {
             console.error("Error en ChecklistController:", error);
             res.status(500).json({ error: 'Hubo un error' });
-            return; // ✅
+            return;
         }
     }
 
@@ -78,7 +78,15 @@ export class CheckListController {
     }
 
     static updateById = async (req: Request, res: Response) => {
-        await req.checklist.update(req.body)
+        const checklistAActualizar = req.checklist
+        const nuevosDatos = req.body.checklist
+        if(!nuevosDatos) {
+            res.status(400).json({ error: "Faltan los datos del 'checklist' en el body." })
+            return
+        }
+        await checklistAActualizar.update({
+            respuestas: nuevosDatos
+        })
         res.json('Se actualizó correctamente')
     }
 
@@ -86,7 +94,5 @@ export class CheckListController {
         await req.checklist.destroy()
         res.json('Checklist Eliminado')
     }
-
-    
 
 }

@@ -4,6 +4,7 @@ import DatosCheckList from "../models/DatosCheckList";
 import { questionType } from "../types";
 import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
+import ImagenesChecklist from "../models/ImagenesChecklist";
 
 declare global {
     namespace Express {
@@ -135,7 +136,11 @@ export const validarChecklistId = async (req: Request, res: Response, next: Next
 export const validarChecklistExiste = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { checklistId } = req.params
-        const checklist = await DatosCheckList.findByPk(checklistId)
+        const checklist = await DatosCheckList.findByPk(checklistId, {
+            include: [{
+                model: ImagenesChecklist
+            }]
+        })
 
         if(!checklist) {
             const error = new Error('Checklist no encontrado')

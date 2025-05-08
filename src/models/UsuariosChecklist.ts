@@ -12,6 +12,12 @@ class UsuariosChecklist extends Model {
     })
     declare name: string
 
+    @AllowNull(false)
+    @Column({
+        type: DataType.STRING(50)
+    })
+    declare lastname: string
+
     @Unique(true)
     @AllowNull(false)
     @Column({

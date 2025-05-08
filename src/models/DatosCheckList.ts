@@ -8,11 +8,11 @@ export type PreguntaRespuesta = {
     pregunta: string;
     respuesta: string | number;
     tipo: QuestionType;
-    aplicaA?: "todos" | "tractocamion"; // Opcional
+    aplicaA?: "todos" | "tractocamion";
 };
 
 export type SeccionChecklist = {
-    nombre: string; // Ej: "Generales", "Cabina", etc.
+    nombre: string;
     preguntas: PreguntaRespuesta[];
 }
 

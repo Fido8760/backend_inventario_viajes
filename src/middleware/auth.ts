@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from "express"
 import jwt from 'jsonwebtoken'
 import UsuariosChecklist from "../models/UsuariosChecklist"
+import { param, validationResult } from "express-validator"
 
 declare global {
     namespace Express {
         interface Request {
-            user?: UsuariosChecklist
+            user: UsuariosChecklist,
+            authenticatedUser?: UsuariosChecklist
         }
     }
 }
@@ -28,8 +30,8 @@ export const authenticate = async (req: Request, res: Response , next: NextFunct
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         if( typeof decoded === 'object' && decoded.id ) {
             
-            req.user = await UsuariosChecklist.findByPk(decoded.id, {
-                attributes: ['id', 'name', 'email']
+            req.authenticatedUser = await UsuariosChecklist.findByPk(decoded.id, {
+                attributes: ['id', 'name', 'lastname','email', 'rol']
             })
             
             next()
@@ -37,8 +39,43 @@ export const authenticate = async (req: Request, res: Response , next: NextFunct
 
         
     } catch (error) {
-        //console.log(error)
         res.status(500).json({error: 'Token no válido'})
+    }
+    
+}
+
+export const validarUsuarioId = async (req: Request, res: Response, next: NextFunction) => {
+    await param('userId')
+            .isInt().withMessage('ID no válido')
+            .custom(value => value > 0).withMessage('ID no válido').run(req)
+
+    let errors = validationResult(req)
+        if(!errors.isEmpty()){
+            res.status(400).json({ errors: errors.array() })
+            return
+        }
+    next()
+}
+
+export const validarExistenciaUsuario = async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = req.params
+    
+    try {
+        const user = await UsuariosChecklist.findByPk(userId, {
+            attributes: ['id', 'name', 'lastname', 'email', 'rol']     
+        })
+        if(!user) {
+            const error = new Error('Usuario no encontrado')
+            res.status(404).json({error: error.message})
+            return
+        }
+        req.user = user
+ 
+        next()
+        
+    } catch (error) {
+        //console.log(error)
+        res.status(500).json({error: 'Hubo un error'})
     }
     
 }

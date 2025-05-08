@@ -26,7 +26,7 @@ export class AsignacionController {
                 include: [
                     {
                         model: UsuariosChecklist,
-                        attributes: ['name']
+                        attributes: ['name', 'lastname', 'rol']
                     },
                     {
                         model: Unidad,
