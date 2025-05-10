@@ -35,8 +35,8 @@ router.post('/login',
 router.post('/forgot-password',
     body('email')
         .isEmail().withMessage('Email no válido'),
-        handleInputErrors,
-        AuthController.forgotPassword
+    handleInputErrors,
+    AuthController.forgotPassword
 )
 
 router.post('/validate-token',
@@ -50,7 +50,8 @@ router.post('/validate-token',
 
 router.post('/reset-password/:token',
     param('token')
-        .notEmpty()
+        .isNumeric()
+        .withMessage('Token no válido')
         .isLength({min: 6, max: 6})
         .withMessage('Token no válido'),
     body('password')

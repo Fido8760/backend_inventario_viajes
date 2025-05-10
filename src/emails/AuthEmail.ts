@@ -15,7 +15,7 @@ export class AuthEmail {
             html: `
                 <p>Hola: ${user.name}, has solicitado reestablecer tu password</p>
                 <p>Visita el siguiente enlace</p>
-                <a href="#">Reestablecer Password</a>
+                <a href="${process.env.FRONTEND_URL}/auth/new-password">Reestablecer Password</a>
                 <p>Ingresa el siguiente código: <b>${user.token}</b></p>
             `
         })

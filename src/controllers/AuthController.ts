@@ -55,7 +55,7 @@ export class AuthController {
 
     static forgotPassword = async (req: Request, res: Response) => {
         
-        const { email, password } = req.body
+        const { email } = req.body
         const user = await UsuariosChecklist.findOne({
             where: {email}
         })
@@ -77,14 +77,18 @@ export class AuthController {
     }
 
     static validateToken = async (req: Request, res: Response) => {
-        const {token} = req.body
-        const tokenExists = await UsuariosChecklist.findOne({where: {token}})
-        if(!tokenExists) {
-            const error = new Error('Token no válido')
-            res.status(404).json({error: error.message})
-            return
+        try {
+            const {token} = req.body
+            const tokenExists = await UsuariosChecklist.findOne({where: {token}})
+            if(!tokenExists) {
+                const error = new Error('Token no válido')
+                res.status(404).json({error: error.message})
+                return
+            }
+            res.json('Token válido, define tu password')
+        } catch (error) {
+            res.status(500).json({error: 'Hubo un error'})
         }
-        res.json('Token válido')
     }
 
     static restePasswordWithToken = async (req: Request, res: Response) => {
