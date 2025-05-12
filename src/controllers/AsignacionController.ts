@@ -44,6 +44,7 @@ export class AsignacionController {
             })
             res.json(asignaciones)
         } catch (error) {
+            console.log(error)
             res.status(500).json({error: 'Hubo un error'})
         }
     }
@@ -82,11 +83,12 @@ export class AsignacionController {
         try {
             const asignacion = new Asignacion(req.body)
 
-            asignacion.userId = req.user.id
+            asignacion.userId = req.authenticatedUser.id
             await asignacion.save()
             res.status(201).json({message: 'Asignación creada Correctamente', id: asignacion.id})
             
         } catch (error) {
+
             res.status(500).json({error: 'Hubo un error'})
         }
     }
