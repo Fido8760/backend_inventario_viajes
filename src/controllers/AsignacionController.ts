@@ -96,7 +96,7 @@ export class AsignacionController {
     static getByID = async (req: Request, res: Response) => {
         const asignacion = await Asignacion.findByPk(req.asignacion.id, {
             include: [
-                { model: UsuariosChecklist, attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'rol', 'token'] } },
+                { model: UsuariosChecklist, attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'token'] } },
                 { model: Unidad, attributes: { exclude: ['createdAt', 'updatedAt'] } },
                 { model: Caja, attributes: { exclude: ['createdAt', 'updatedAt'] } },
                 { model: Operador, attributes: { exclude: ['createdAt', 'updatedAt'] } },
