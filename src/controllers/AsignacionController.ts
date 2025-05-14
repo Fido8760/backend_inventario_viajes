@@ -245,6 +245,6 @@ export class AsignacionController {
 
     static deleteById = async (req: Request, res: Response) => {
         await req.asignacion.destroy()
-        res.status(201).json('Presupuesto Eliminado')
+        res.status(201).json('Asignación Eliminada')
     }
 }
