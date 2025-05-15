@@ -6,18 +6,36 @@ import Unidad from "../models/Unidad"
 import Caja from "../models/Caja"
 import ImagenesChecklist from "../models/ImagenesChecklist"
 import UsuariosChecklist from "../models/UsuariosChecklist"
-import { Transaction } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import { db } from "../config/db"
 import { getPreguntaInfo } from "../helpers/getPreguntaInfo" 
+import { endOfDay, isValid, parseISO, startOfDay } from "date-fns"
 
 export class AsignacionController {
 
     static getAll = async (req: Request, res: Response) => {
 
         const {skip, take} = req.pagination
+        const { asignacionDate } = req.query
+        const where: any = {}
+
+        if (asignacionDate) {
+            const date = parseISO(asignacionDate as string)
+            if(!isValid(date)) {
+                res.status(500).json({error: 'Fecha no válida'})
+                return
+            }
+            const start =  startOfDay(date)
+            const end =  endOfDay(date)
+
+            where.createdAt = {
+                [Op.between]: [start, end]
+            };
+        }
 
         try {
             const asignaciones = await Asignacion.findAndCountAll({
+                where,
                 limit: take,
                 offset: skip,
                 order: [
@@ -44,7 +62,7 @@ export class AsignacionController {
             })
             res.json(asignaciones)
         } catch (error) {
-            console.log(error)
+            //console.log(error)
             res.status(500).json({error: 'Hubo un error'})
         }
     }

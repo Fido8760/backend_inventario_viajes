@@ -7,9 +7,9 @@ import { authenticate, validarExistenciaUsuario, validarUsuarioId } from '../mid
 
 
 const router = Router()
-router.use(limiter)
 
 router.post('/create-account',
+    limiter,
     authenticate,
     body('name')
         .notEmpty().withMessage('El nombre no puede ir vacio'),
@@ -24,6 +24,7 @@ router.post('/create-account',
 )
 
 router.post('/login',
+    limiter,
     body('password')
         .notEmpty().withMessage('El password es obligatorio'),
     body('email')
@@ -33,6 +34,7 @@ router.post('/login',
 )
 
 router.post('/forgot-password',
+    limiter,
     body('email')
         .isEmail().withMessage('Email no válido'),
     handleInputErrors,
@@ -40,6 +42,7 @@ router.post('/forgot-password',
 )
 
 router.post('/validate-token',
+    limiter,
     body('token')
         .notEmpty()
         .isLength({min: 6, max: 6})
