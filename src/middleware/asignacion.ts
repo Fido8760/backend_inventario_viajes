@@ -111,6 +111,12 @@ export const validarasignacionInput = async (req: Request, res: Response, next: 
 }
 
 export const validarParamOpcional = async (req: Request, res: Response, next: NextFunction) => {
+    await query('asignacionDate')
+            .optional()
+            .isISO8601()
+            .withMessage('La fecha debe tener formato válido YYYY-MM-DD')
+            .run(req);
+
     await query('take')
             .optional()
             .isInt({min: 1})
