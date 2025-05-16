@@ -33,52 +33,62 @@ export class AsignacionController {
             };
         }
 
-        if(search && typeof search === 'string') {
-            const searchTerm = search.trim().replace(/[%_]/g, '\\$&')
-            const searchTerms = searchTerm.split(' ').filter(term => term.length > 0)
+        if (search && typeof search === 'string') {
+        const searchTerm = search.trim().replace(/[%_]/g, '\\$&');
+        
+        // Versión compatible con producción:
+        where[Op.or] = [
+            Sequelize.where(
+                Sequelize.fn('CONCAT', 
+                    Sequelize.col('Operador.nombre'), ' ',
+                    Sequelize.col('Operador.apellido_p')
+                ),
+                { [Op.like]: `%${searchTerm}%` }
+            ),
+            { '$Unidad.u_placas$': { [Op.like]: `%${searchTerm}%` } },
+            Sequelize.where(
+                Sequelize.cast(Sequelize.col('Unidad.no_unidad'), 'CHAR'),
+                { [Op.like]: `%${searchTerm}%` }
+            )
+        ];
+    }
 
-            where[Op.or] = searchTerms.flatMap(term => [
-            // Campos de Asignacion y relaciones
-            { '$Operador.nombre$': { [Op.like]: `%${term}%` } },
-            { '$Operador.apellido_p$': { [Op.like]: `%${term}%` } },
-            { '$Unidad.u_placas$': { [Op.like]: `%${term}%` } },
-            Sequelize.where(Sequelize.cast(Sequelize.col('Unidad.no_unidad'), 'CHAR'), { [Op.like]: `%${term}%` }),
-            ])
-
-        }
-
-        try {
-            const asignaciones = await Asignacion.findAndCountAll({
-                where,
-                limit: take,
-                offset: skip,
-                order: [
-                    ['createdAt', 'DESC']
-                ],
-                include: [
-                    {
-                        model: UsuariosChecklist,
-                        attributes: ['name', 'lastname', 'rol']
-                    },
-                    {
-                        model: Unidad,
-                        attributes: ['no_unidad', 'u_placas', 'tipo_unidad']
-                    },
-                    {
-                        model: Caja,
-                        attributes: ['c_placas', 'c_marca']
-                    },
-                    {
-                        model: Operador,
-                        attributes: ['nombre', 'apellido_p', 'apellido_m']
-                    }
-                ]
-            })
-            res.json(asignaciones)
-        } catch (error) {
-            //console.log(error)
-            res.status(500).json({error: 'Hubo un error'})
-        }
+    try {
+        const asignaciones = await Asignacion.findAndCountAll({
+            where,
+            limit: take,
+            offset: skip,
+            order: [['createdAt', 'DESC']],
+            include: [
+                { model: UsuariosChecklist, attributes: ['name', 'lastname', 'rol'] },
+                { 
+                    model: Unidad, 
+                    attributes: ['no_unidad', 'u_placas', 'tipo_unidad'],
+                    required: false // Important for searches!
+                },
+                { 
+                    model: Caja,
+                    attributes: ['c_placas', 'c_marca'],
+                    required: false
+                },
+                { 
+                    model: Operador,
+                    attributes: ['nombre', 'apellido_p', 'apellido_m'],
+                    required: false
+                }
+            ],
+            subQuery: false, // Crucial para búsquedas con includes
+            logging: console.log // Habilita logs para debug
+        });
+        
+        res.json(asignaciones);
+    } catch (error) {
+        console.error('Error en producción:', error); // Verás esto en Render logs
+        res.status(500).json({ 
+            error: 'Error en búsqueda',
+            details: process.env.NODE_ENV === 'development' ? error.message : null
+        });
+    }
     }
 
     static getUnidades = async (req: Request, res: Response) => {
