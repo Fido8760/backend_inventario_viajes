@@ -36,18 +36,18 @@ export class AsignacionController {
         if (search && typeof search === 'string') {
         const searchTerm = search.trim().replace(/[%_]/g, '\\$&');
         
-        // Versión compatible con producción:
         where[Op.or] = [
+            // Usa los nombres exactos de tabla/columna de tu DB
             Sequelize.where(
                 Sequelize.fn('CONCAT', 
-                    Sequelize.col('Operador.nombre'), ' ',
-                    Sequelize.col('Operador.apellido_p')
+                    Sequelize.col('operador.nombre'), ' ',
+                    Sequelize.col('operador.apellido_p')
                 ),
                 { [Op.like]: `%${searchTerm}%` }
             ),
-            { '$Unidad.u_placas$': { [Op.like]: `%${searchTerm}%` } },
+            { '$unidad.u_placas$': { [Op.like]: `%${searchTerm}%` } },
             Sequelize.where(
-                Sequelize.cast(Sequelize.col('Unidad.no_unidad'), 'CHAR'),
+                Sequelize.cast(Sequelize.col('unidad.no_unidad'), 'CHAR'),
                 { [Op.like]: `%${searchTerm}%` }
             )
         ];
