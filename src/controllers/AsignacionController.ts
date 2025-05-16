@@ -6,7 +6,7 @@ import Unidad from "../models/Unidad"
 import Caja from "../models/Caja"
 import ImagenesChecklist from "../models/ImagenesChecklist"
 import UsuariosChecklist from "../models/UsuariosChecklist"
-import { Op, Transaction } from "sequelize";
+import { Op, Sequelize, Transaction } from "sequelize";
 import { db } from "../config/db"
 import { getPreguntaInfo } from "../helpers/getPreguntaInfo" 
 import { endOfDay, isValid, parseISO, startOfDay } from "date-fns"
@@ -16,7 +16,7 @@ export class AsignacionController {
     static getAll = async (req: Request, res: Response) => {
 
         const {skip, take} = req.pagination
-        const { asignacionDate } = req.query
+        const { asignacionDate, search } = req.query
         const where: any = {}
 
         if (asignacionDate) {
@@ -31,6 +31,20 @@ export class AsignacionController {
             where.createdAt = {
                 [Op.between]: [start, end]
             };
+        }
+
+        if(search && typeof search === 'string') {
+            const searchTerm = search.trim().replace(/[%_]/g, '\\$&')
+            const searchTerms = searchTerm.split(' ').filter(term => term.length > 0)
+
+            where[Op.or] = searchTerms.flatMap(term => [
+            // Campos de Asignacion y relaciones
+            { '$Operador.nombre$': { [Op.like]: `%${term}%` } },
+            { '$Operador.apellido_p$': { [Op.like]: `%${term}%` } },
+            { '$Unidad.u_placas$': { [Op.like]: `%${term}%` } },
+            Sequelize.where(Sequelize.cast(Sequelize.col('Unidad.no_unidad'), 'CHAR'), { [Op.like]: `%${term}%` }),
+            ])
+
         }
 
         try {
