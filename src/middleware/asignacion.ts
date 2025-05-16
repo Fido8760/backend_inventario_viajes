@@ -128,6 +128,12 @@ export const validarParamOpcional = async (req: Request, res: Response, next: Ne
             .isInt().withMessage('Skip debe un unumero entero')
             .custom(value => value >= 0).withMessage('ID no válido')
             .run(req)
+            
+    await query('search')
+            .optional()
+            .isString()
+            .withMessage('Deber ser texto la búsqueda')
+            .run(req)
 
     let errors = validationResult(req)
     if(!errors.isEmpty()){
@@ -136,8 +142,8 @@ export const validarParamOpcional = async (req: Request, res: Response, next: Ne
     }
 
     // Parsear y asignar el valor de 'take' con un valor por defecto
-    const take = req.query.take ? parseInt(req.query.take as string, ) : 5;
-    const skip = req.query.take ? parseInt(req.query.skip as string, 0) : 0;
+    const take = req.query.take ? parseInt(req.query.take as string ) : 5;
+    const skip = req.query.take ? parseInt(req.query.skip as string ) : 0;
     req.pagination = {take, skip}
 
     next()
