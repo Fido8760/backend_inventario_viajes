@@ -143,7 +143,7 @@ export const validarParamOpcional = async (req: Request, res: Response, next: Ne
 
     // Parsear y asignar el valor de 'take' con un valor por defecto
     const take = req.query.take ? parseInt(req.query.take as string ) : 5;
-    const skip = req.query.take ? parseInt(req.query.skip as string ) : 0;
+    const skip = req.query.skip ? parseInt(req.query.skip as string ) : 0;
     req.pagination = {take, skip}
 
     next()
