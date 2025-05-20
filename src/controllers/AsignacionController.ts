@@ -65,7 +65,8 @@ export class AsignacionController {
                     { model: Operador, attributes: ['nombre', 'apellido_p', 'apellido_m'], required: false},
                     { model: DatosCheckList, attributes: ['id'], required: false}
                 ],
-                distinct: true,
+                subQuery: false, // Crucial para búsquedas con includes
+                logging: console.log // Habilita logs para debug
             });
             
             res.json(asignaciones);
