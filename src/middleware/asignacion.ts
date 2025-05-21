@@ -70,7 +70,8 @@ export const validarasignacionInput = async (req: Request, res: Response, next: 
                 .run(req)
         const initialErrors = validationResult(req)
         if(!initialErrors.isEmpty()) {
-            return next()
+            res.status(400).json({ errors: initialErrors.array() })
+            return 
         }
         const unidadId = req.body.unidadId
         const unidad = await Unidad.findByPk(unidadId)

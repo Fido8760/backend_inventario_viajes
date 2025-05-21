@@ -36,7 +36,6 @@ export class AsignacionController {
         if (search && typeof search === 'string') {
             const searchTerm = search.trim().replace(/[%_]/g, '\\$&');
             where[Op.or] = [
-                // Usa los nombres exactos de tabla/columna de tu DB
                 Sequelize.where(
                     Sequelize.fn('CONCAT', 
                         Sequelize.col('operador.nombre'), ' ',
