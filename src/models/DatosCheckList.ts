@@ -26,7 +26,11 @@ export type RespuestaChecklist = {
 
 class DatosCheckList extends Model {
     @ForeignKey(() => Asignacion)
-    @Column({ type: DataType.INTEGER, allowNull: false })
+    @Column({ 
+        type: DataType.INTEGER, 
+        allowNull: false,
+        unique: true 
+    })
     declare asignacionId: number
 
     @BelongsTo(() => Asignacion)
