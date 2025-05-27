@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { body, param, query, validationResult } from "express-validator";
 import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
+import DatosCheckList from "../models/DatosCheckList";
 
 declare global {
     namespace Express {
@@ -37,6 +38,10 @@ export const validarExitenciaViaje = async (req: Request, res: Response, next: N
                     model: Unidad,
                     attributes: ['id', 'tipo_unidad']
 
+                },
+                {
+                    model: DatosCheckList,
+                    as:  'checklist'
                 }
             ]
         })
@@ -53,7 +58,20 @@ export const validarExitenciaViaje = async (req: Request, res: Response, next: N
         res.status(500).json({error: 'Hubo un error'})
     }
     
+    
 }
+
+
+export const prevenirCreacionChecklistDuplicado = (req: Request, res: Response, next: NextFunction) => {
+
+    if (req.asignacion && req.asignacion.checklist) {
+        const error = new Error('La asignación ya tiene un checklist asociado')
+        res.status(409).json({error: error.message})
+        return
+    }
+
+    next();
+};
 
 export const validarasignacionInput = async (req: Request, res: Response, next: NextFunction) => {
     try {

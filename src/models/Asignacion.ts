@@ -1,4 +1,4 @@
-import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript";
+import { Table, Model, Column, DataType, HasOne, BelongsTo, ForeignKey } from "sequelize-typescript";
 import Unidad from "./Unidad";
 import Operador from "./Operador";
 import Caja from "./Caja";
@@ -38,11 +38,12 @@ class Asignacion extends Model {
     @BelongsTo(() => Operador, { onDelete: "SET NULL", hooks: true })
     declare operador: Operador
 
-    @HasMany(() => DatosCheckList, {
+    // Cambio principal: HasMany por HasOne
+    @HasOne(() => DatosCheckList, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     })
-    declare checklists: DatosCheckList[]
+    declare checklist: DatosCheckList // Cambiar de checklists[] a checklist
 
     @ForeignKey(() => UsuariosChecklist)
     declare userId: number
