@@ -139,114 +139,131 @@ export class AsignacionController {
 
     static updateByID = async (req: Request, res: Response) => {
         let transaction: Transaction | undefined
+        let transactionCommitted = false
+        const asignacionId = req.asignacion.id
+
         try {
             
             transaction = await db.transaction()
-            const asignacionActual = req.asignacion
+
+            const asignacionAntesDeActualizar  = req.asignacion
             const { unidadId, operadorId, cajaId } = req.body
-            if(!asignacionActual) {
-                await transaction.rollback()
-                res.status(404).json({error: 'Asignacion no encontrada'})
-                return
-            }
+
             const nuevaUnidad = await Unidad.findByPk(unidadId, { transaction})
             if(!nuevaUnidad) {
                 await transaction.rollback()
                 res.status(404).json({error: 'El ID de la nueva unidad es requerido '})
                 return
             }
-            const tipoUnidadActual = asignacionActual.unidad.tipo_unidad;
+
+            const tipoUnidadAnterior = asignacionAntesDeActualizar.unidad?.tipo_unidad;
             const tipoUnidadNueva = nuevaUnidad.tipo_unidad
 
-            if(!tipoUnidadActual) {
-                await transaction.rollback() 
-                console.error("[ERROR CRITICO] No se pudo determinar el tipo de unidad actual. Middleware debe incluir Unidad.");
-                res.status(500).json({ error: 'Error interno: Unidad actual no cargada.' });
-                return 
-            }
-
-            const cambioTipo = tipoUnidadActual !== tipoUnidadNueva
-            console.log(`[INFO] Actualizando Asignación ${asignacionActual.id}. Tipo Actual: ${tipoUnidadActual}, Nuevo: ${tipoUnidadNueva}. Cambio?: ${cambioTipo}`)
             const datosParaActualizar: Partial<Asignacion> = {
                 unidadId: nuevaUnidad.id,
-                operadorId: operadorId && Number(operadorId) > 0 ? Number(operadorId) : asignacionActual.operadorId,
+                operadorId: operadorId && Number(operadorId) > 0 ? Number(operadorId) : asignacionAntesDeActualizar.operadorId,
                 cajaId: (tipoUnidadNueva === 'TRACTOCAMION' && cajaId && Number(cajaId) > 0) ? Number(cajaId) : null,
             }
 
-            await asignacionActual.update(datosParaActualizar, {transaction})
-            console.log(`[DB] Asignacion ${asignacionActual.id} actualizada.`);
+            await Asignacion.update(datosParaActualizar, {
+                where: { id: asignacionId },
+                transaction
+            })
+            console.log(`[DB] Asignacion ${asignacionId} actualizada en la transacción.`);
 
-            if( cambioTipo && tipoUnidadActual === 'TRACTOCAMION' && tipoUnidadNueva !== 'TRACTOCAMION') {
-                console.log(`[LOGIC] Cambio TRACTO -> ${tipoUnidadNueva}. Llamando a limpiarChecklistTracto...`);
-                await AsignacionController.limpiarChecklistTracto(asignacionActual.id, transaction)
+            const cambioTipo = tipoUnidadAnterior !== tipoUnidadNueva;
+
+            if( cambioTipo && tipoUnidadAnterior === 'TRACTOCAMION' && tipoUnidadNueva !== 'TRACTOCAMION' && asignacionAntesDeActualizar.checklist) {
+                console.log(`[LOGIC] Cambio TRACTO -> ${tipoUnidadNueva}. Llamando a limpiarChecklistTracto para checklist ID ${asignacionAntesDeActualizar.checklist.id}...`)
+                await AsignacionController.limpiarChecklistTracto(asignacionId, transaction)
             } else if ( cambioTipo) {
-                console.log(`[INFO] Cambio de tipo (${tipoUnidadActual} -> ${tipoUnidadNueva}), no requiere limpieza.`);
+                console.log(`[INFO] Cambio de tipo (${tipoUnidadAnterior} -> ${tipoUnidadNueva}), no requiere limpieza.`);
             }
 
             await transaction.commit()
-            console.log(`[DB] Transacción completada para Asignación ${asignacionActual.id}.`);
+            transactionCommitted = true
+            console.log(`[DB] Transacción completada para Asignación ${asignacionId}.`);
 
-            const asignacionActualizada = await Asignacion.findByPk(asignacionActual.id, {
-                // Incluir TODOS los datos necesarios para el frontend
-                include: [
-                    { model: UsuariosChecklist, attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'rol', 'token'] } },
-                    { model: Unidad, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-                    { model: Caja, required: false, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-                    { model: Operador, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-                    {
-                        model: DatosCheckList, // Obtener el último checklist asociado
-                        required: false,
-                        order: [['createdAt', 'DESC']],
-                        limit: 1,
-                        include: [{ model: ImagenesChecklist, required: false }] // Con sus imágenes
-                    }
-                ]
-            });
-            res.status(200).json({ message: 'Asignación actualizada correctamente', asignacion: asignacionActualizada });
-        } catch (error) {
-            if (transaction) {
-                console.log("[DB] Error detectado, revirtiendo transacción...");
-                await transaction.rollback();
-            }
-            console.error(`[ERROR][AsignacionController][updateByID]:`, error);
-            res.status(500).json({ error: 'Error al actualizar la asignación' })
+            try {
+                
+                const asignacionParaRespuesta  = await Asignacion.findByPk(asignacionId, {
+                    // Incluir TODOS los datos necesarios para el frontend
+                    include: [
+                        { model: UsuariosChecklist, attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'rol', 'token'] } },
+                        { model: Unidad, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+                        { model: Caja, required: false, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+                        { model: Operador, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+                        {
+                            model: DatosCheckList, // Obtener el último checklist asociado
+                            required: false,
+                            order: [['createdAt', 'DESC']],
+                            limit: 1,
+                            include: [{ model: ImagenesChecklist, required: false }] // Con sus imágenes
+                        }
+                    ]
+                });
+                if(!asignacionParaRespuesta) {
+                    console.error(`[ERROR POST-COMMIT] No se pudo recargar la asignación ${asignacionId}.`)
+                    res.status(200).json({ message: 'Asignación actualizada correctamente, pero no se pudo obtener la entidad actualizada para la respuesta.' });
+                    return 
+                }
+                
+                res.status(200).json({ message: 'Asignación actualizada correctamente', asignacion: asignacionParaRespuesta })
+
+            } catch (fetchError) {
+
+            console.error(`[ERROR POST-COMMIT] Error al obtener asignación ${asignacionId} para respuesta:`, fetchError);
+            res.status(200).json({ message: 'Asignación actualizada correctamente, pero hubo un error al obtener los datos completos para la respuesta.' });
             return 
+            }
+
+        } catch (error) {
+            
+            if (transaction && !transactionCommitted) {
+                try {
+                    console.log("[DB] Error detectado ANTES del commit, revirtiendo transacción...");
+                    await transaction.rollback();
+                    console.log("[DB] Transacción revertida.");
+                } catch (rollbackError) {
+                    console.error("[DB] Error al intentar revertir la transacción:", rollbackError);
+                }
+            } else if (transactionCommitted) {
+                console.log("[DB] Error detectado DESPUÉS del commit. La transacción ya fue confirmada.");
+                // El error original (el 'error' del catch principal) es el que ocurrió después del commit.
+            }
+            
+            console.error(`[ERROR][AsignacionController][updateByID] para Asignación ${asignacionId}:`, error);
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Error al actualizar la asignación.' });
+            }
+            return;
         }
-    }
+    };
 
     private static limpiarChecklistTracto = async (asignacionId: number, transaction: Transaction) => {
         try {
-            console.log(`[LOGIC][limpiarChecklistTracto] Buscando último checklist para asignación ${asignacionId}...`);
-            // Buscar el checklist MÁS RECIENTE asociado a esta asignación
             const checklist = await DatosCheckList.findOne({
                 where: { asignacionId },
-                order: [['createdAt', 'DESC']],
-                transaction // Usar la transacción pasada
+                transaction
             });
 
-            // Si no hay checklist o no tiene respuestas, no hay nada que hacer
             if (!checklist || !checklist.respuestas) {
                 console.log(`[LOGIC][limpiarChecklistTracto] No se encontró checklist o respuestas para limpiar.`);
-                return; // Salir de la función
+                return
             }
 
             console.log(`[LOGIC][limpiarChecklistTracto] Checklist ${checklist.id} encontrado. Procesando respuestas...`);
-            let respuestas: RespuestaChecklist = checklist.respuestas; // Ya es objeto JS
+            let respuestas: RespuestaChecklist = JSON.parse(JSON.stringify(checklist.respuestas)); // Ya es objeto JS
             let cambiosRealizados = false;
 
-            // Iterar sobre secciones y preguntas para limpiar
-            // Usamos bucles for...of para poder usar await dentro si getPreguntaInfo fuera asíncrono
             if (respuestas.secciones && Array.isArray(respuestas.secciones)) {
                  for (const seccion of respuestas.secciones) {
                     if (seccion.preguntas && Array.isArray(seccion.preguntas)) {
                         for (const pregunta of seccion.preguntas) {
                             if (pregunta && typeof pregunta.idPregunta !== 'undefined') {
-                                // *** LLAMADA AL HELPER CRÍTICO ***
-                                const info = getPreguntaInfo(pregunta.idPregunta); // Obtener info de la plantilla
-
-                                // Si la pregunta es específica de tractocamión y tiene respuesta...
+                                const info = getPreguntaInfo(pregunta.idPregunta)
                                 if (info.aplicaA === 'tractocamion' && pregunta.respuesta !== null) {
-                                    pregunta.respuesta = null; // ...limpiar la respuesta
+                                    pregunta.respuesta = null
                                     cambiosRealizados = true;
                                     console.log(`[LOGIC][limpiarChecklistTracto] Limpiada respuesta para pregunta ${pregunta.idPregunta}`);
                                 }
@@ -256,21 +273,21 @@ export class AsignacionController {
                 }
             }
 
-
-            // Si se realizaron cambios, actualizar el checklist en la DB
             if (cambiosRealizados) {
                 console.log(`[DB][limpiarChecklistTracto] Guardando respuestas limpiadas para checklist ${checklist.id}...`);
-                await checklist.update({ respuestas }, { transaction }); // Usar la transacción
+                await checklist.update(
+                    { respuestas }, 
+                    { transaction }
+                )
                 console.log(`[DB][limpiarChecklistTracto] Checklist ${checklist.id} actualizado.`);
             } else {
                  console.log(`[LOGIC][limpiarChecklistTracto] No se realizaron cambios en las respuestas.`);
             }
         } catch (error) {
-             // Importante: Si este método falla, debe lanzar el error para que el catch principal haga rollback
              console.error(`[ERROR][limpiarChecklistTracto] Error limpiando checklist para asignación ${asignacionId}:`, error);
-             throw error; // Relanzar el error para que la transacción principal haga rollback
+             throw error
         }
-    }; // Fin de limpiarChecklistTracto
+    }
 
     static deleteById = async (req: Request, res: Response) => {
         await req.asignacion.destroy()
