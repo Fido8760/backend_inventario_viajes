@@ -42,12 +42,15 @@ export class CheckListController {
         try {
             const checklist = new DatosCheckList(req.body)
             checklist.asignacionId = req.asignacion.id
+
             form.parse(req, (error, fields, files) => {
             if (!files.file || !files.file[0]) {
                 return res.status(400).json({ error: 'No se ha subido ninguna imagen' });
             }
 
-                cloudinary.uploader.upload(files.file[0].filepath, {public_id: uuid() }, 
+            const fieldId = fields.fieldId?.[0] || 'sin_nombre'
+
+                cloudinary.uploader.upload(files.file[0].filepath, {public_id: `${fieldId}_${uuid()}` }, 
                     async function (error, result) {
                         if(error) {
                             //console.log(error)
