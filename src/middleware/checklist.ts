@@ -165,3 +165,18 @@ export const perteneceAAsignacion = async (req: Request, res: Response, next: Ne
 
     next()
 }
+
+export const verificarChecklistNoFinalizado = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.checklist) {
+        res.status(500).json({ error: 'Checklist no cargado en la petición' });
+        return 
+    }
+
+    if (req.checklist.completado) {
+        res.status(403).json({ error: 'Este checklist ya fue finalizado y no puede ser modificado' });
+        return 
+    }
+
+    next();
+};
+
