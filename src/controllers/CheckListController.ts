@@ -98,4 +98,27 @@ export class CheckListController {
         res.json('Checklist Eliminado')
     }
 
+    static finalizarChecklist = async (req: Request, res: Response) => {
+        const checklist = req.checklist
+        try {
+            const imagenes = await ImagenesChecklist.count({
+                where: { checklistId: checklist.id }
+            })
+
+            const MIN_IMAGES = 8
+
+            if ( imagenes < MIN_IMAGES) {
+                res.status(400).json({ error: `Se requieren al menos ${MIN_IMAGES} para finalizar el checklist` })
+                return
+            }
+
+            checklist.completado = true
+            await checklist.save()
+            res.json( {message: 'Checklist Finalizado Correctamente'})
+
+        } catch (error) {
+            //console.log(error)
+            res.status(500).json({error: 'Error al finalizar el checklist'})
+        }
+    }
 }

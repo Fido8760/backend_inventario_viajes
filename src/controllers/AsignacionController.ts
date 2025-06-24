@@ -129,7 +129,9 @@ export class AsignacionController {
                 { model: Unidad, attributes: { exclude: ['createdAt', 'updatedAt'] } },
                 { model: Caja, attributes: { exclude: ['createdAt', 'updatedAt'] } },
                 { model: Operador, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-                { model: DatosCheckList,
+                {   
+                    model: DatosCheckList,
+                    as: 'checklist',
                     include: [{model: ImagenesChecklist}]
                 }
             ]

@@ -44,6 +44,14 @@ class DatosCheckList extends Model {
         onDelete: 'CASCADE'
     })
     declare imagenes: ImagenesChecklist[]
+
+    @Column({
+        type: DataType.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    })
+    declare completado: boolean;
+
 }
 
 export default DatosCheckList;
