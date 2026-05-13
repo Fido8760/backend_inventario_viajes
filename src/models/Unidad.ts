@@ -4,13 +4,17 @@ import Poliza from "./Poliza";
 import TarjetaCirculacion from "./TarjetaCirculacion";
 import VeriAmbiental from "./VeriAmbiental";
 import VeriFisico from "./VeriFisico";
+import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
     tableName: 'unidades',
     timestamps: false
 })
 
-class Unidad extends Model {
+class Unidad extends  Model<
+    InferAttributes<Unidad>,
+    InferCreationAttributes<Unidad>
+> {
     @Column({
         type: DataType.STRING(100)
     })

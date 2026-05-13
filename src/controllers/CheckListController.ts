@@ -6,6 +6,7 @@ import cloudinary from '../config/cloudinary'
 import ImagenesChecklist from "../models/ImagenesChecklist"
 import sharp from "sharp"
 import fs from 'fs/promises'
+import { AsignacionStatus } from "../types/estados-asignacion"
 
 export class CheckListController {
 
@@ -22,6 +23,8 @@ export class CheckListController {
                 respuestas: checklist,
                 asignacionId: req.asignacion.id,
             });
+
+            await req.asignacion.update({ status: AsignacionStatus.FOTOS_PENDIENTES })
     
             res.status(201).json({ 
                 message: 'Revisión Creada Correctamente', 
@@ -39,7 +42,7 @@ export class CheckListController {
     
     static uploadImage = async (req: Request, res: Response) => {
         const form = formidable({multiples: false})
-        const {checklistId} = req.params
+        const checklistId = +req.params.checklistId
 
         form.parse(req, async(error, fields, files) => {
             if(error) {
@@ -54,7 +57,7 @@ export class CheckListController {
 
             try {
                 const file = files.file[0]
-                const fieldId = fields.fideldId?.[0] || 'sin_nombre'
+                const fieldId = fields.fieldId?.[0] || 'sin_nombre'
                 const tempWebpPath = `${file.filepath}_converted.webp`
 
                 await sharp(file.filepath).webp({ quality: 85 }).toFile(tempWebpPath)
@@ -72,7 +75,8 @@ export class CheckListController {
 
                 await ImagenesChecklist.create({
                     urlImagen: result.secure_url,
-                    checklistId
+                    checklistId,
+                    fieldId
                 })
 
                 res.status(201).json({
@@ -113,25 +117,36 @@ export class CheckListController {
 
     static finalizarChecklist = async (req: Request, res: Response) => {
         const checklist = req.checklist
+
+        const FOTOS_OBLIGATORIAS = [
+            'frontal',
+            'lateral_derecho',
+            'lateral_izquierdo',
+            'trasera',
+            'interior_cabina',
+            'documentacion',
+            'odometro',
+            'firma'
+        ]
+
         try {
-            const imagenes = await ImagenesChecklist.count({
+            const imagenes = await ImagenesChecklist.findAll({
                 where: { checklistId: checklist.id }
             })
 
-            const MIN_IMAGES = 8
+            const fieldsSubidos = imagenes.map(img => img.fieldId)
+            const faltantes = FOTOS_OBLIGATORIAS.filter(f => !fieldsSubidos.includes(f))
 
-            if ( imagenes < MIN_IMAGES) {
-                res.status(400).json({ error: `Se requieren al menos ${MIN_IMAGES} para finalizar el checklist` })
+            if (faltantes.length > 0) {
+                res.status(400).json({ error: 'Faltan fotos obligatorias', faltantes })
                 return
             }
 
-            checklist.completado = true
-            await checklist.save()
-            res.json( {message: 'Checklist Finalizado Correctamente'})
+            await req.asignacion.update({ status: AsignacionStatus.COMPLETA })
+            res.json({ message: 'Checklist Finalizado Correctamente' })
 
         } catch (error) {
-            //console.log(error)
-            res.status(500).json({error: 'Error al finalizar el checklist'})
+            res.status(500).json({ error: 'Error al finalizar el checklist' })
         }
     }
 }

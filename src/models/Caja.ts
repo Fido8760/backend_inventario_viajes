@@ -1,4 +1,5 @@
-import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript";
+import { Table, Model, Column, DataType, HasMany } from "sequelize-typescript";
+import { InferAttributes, InferCreationAttributes } from "sequelize";
 import Asignacion from "./Asignacion";
 
 @Table({
@@ -6,7 +7,10 @@ import Asignacion from "./Asignacion";
     timestamps: false
 })
 
-class Caja extends Model {
+class Caja extends Model <
+    InferAttributes<Caja>,
+    InferCreationAttributes<Caja>
+> {
     @Column({
         type: DataType.STRING(100)
     })

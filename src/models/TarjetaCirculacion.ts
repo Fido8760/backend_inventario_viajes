@@ -1,12 +1,16 @@
 import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript";
 import Asignacion from "./Asignacion";
 import Unidad from "./Unidad";
+import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
     tableName: 'tajetas_circulacion'
 })
 
-class TarjetaCirculacion extends Model {
+class TarjetaCirculacion extends Model<
+    InferAttributes<TarjetaCirculacion>,
+    InferCreationAttributes<TarjetaCirculacion>
+>{
     @Column({
         type: DataType.STRING(100)
     })

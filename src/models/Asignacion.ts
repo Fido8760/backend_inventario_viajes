@@ -1,15 +1,20 @@
-import { Table, Model, Column, DataType, HasOne, BelongsTo, ForeignKey } from "sequelize-typescript";
+import { Table, Model, Column, DataType, HasOne, BelongsTo, ForeignKey, Default } from "sequelize-typescript";
+import { InferAttributes, InferCreationAttributes } from "sequelize";
 import Unidad from "./Unidad";
 import Operador from "./Operador";
 import Caja from "./Caja";
 import DatosCheckList from "./DatosCheckList";
 import UsuariosChecklist from "./UsuariosChecklist";
+import { AsignacionStatus } from "../types/estados-asignacion";
 
 @Table({
     tableName: 'asignaciones'
 })
 
-class Asignacion extends Model {
+class Asignacion extends Model<
+    InferAttributes<Asignacion>,
+    InferCreationAttributes<Asignacion>
+> {
 
     @ForeignKey(() => Unidad)
     @Column({
@@ -28,6 +33,12 @@ class Asignacion extends Model {
     declare cajaId: number | null
     @BelongsTo(() => Caja, { onDelete: "SET NULL", hooks: true })
     declare caja: Caja
+
+    @Default(AsignacionStatus.CREADA)
+    @Column({
+        type: DataType.ENUM(...Object.values(AsignacionStatus))
+    })
+    declare status: AsignacionStatus
 
     @ForeignKey(() => Operador)
     @Column({

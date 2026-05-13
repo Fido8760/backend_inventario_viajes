@@ -1,5 +1,6 @@
 import { Table, Column, Model, DataType, HasMany, Default, Unique, AllowNull } from "sequelize-typescript";
 import Asignacion from "./Asignacion";
+import { Rol } from "../types/roles";
 
 @Table({
     tableName: 'usuarios_checklist'
@@ -31,11 +32,12 @@ class UsuariosChecklist extends Model {
     })
     declare password: string
 
-    @Default(2)
+    @Default(Rol.CAPTURISTA)
     @Column({
-        type: DataType.INTEGER
+        type: DataType.ENUM(...Object.values(Rol)),
+        allowNull: false
     })
-    declare rol: number
+    declare rol: Rol
 
     @Column({
         type: DataType.STRING(6)

@@ -1,11 +1,15 @@
 import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript";
 import Unidad from "./Unidad";
+import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
     tableName: 'polizas'
 })
 
-class Poliza extends Model {
+class Poliza extends Model<
+    InferAttributes<Poliza>,
+    InferCreationAttributes<Poliza>
+> {
     @Column({
         type: DataType.STRING(100)
     })

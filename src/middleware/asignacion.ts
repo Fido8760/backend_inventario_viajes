@@ -4,6 +4,7 @@ import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
 import DatosCheckList from "../models/DatosCheckList";
 import Operador from "../models/Operador";
+import { Rol } from "../types/roles";
 
 declare global {
     namespace Express {
@@ -172,6 +173,25 @@ export const validarParamOpcional = async (req: Request, res: Response, next: Ne
     const take = req.query.take ? parseInt(req.query.take as string ) : 5;
     const skip = req.query.skip ? parseInt(req.query.skip as string ) : 0;
     req.pagination = {take, skip}
+
+    next()
+}
+
+export const verificarAsignacionEditable = async (req: Request, res: Response, next: NextFunction) => {
+    const asignacion = req.asignacion
+    const rol = req.authenticatedUser?.rol as Rol
+
+    // SISTEMAS puede editar siempre
+    if (rol === Rol.SISTEMAS) {
+        next()
+        return
+    }
+
+    // CAPTURISTA no puede editar si ya tiene checklist
+    if (asignacion.checklist) {
+        res.status(403).json({ error: 'No puedes editar una asignación que ya tiene checklist' })
+        return
+    }
 
     next()
 }

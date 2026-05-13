@@ -1,12 +1,16 @@
 import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript";
 import Asignacion from "./Asignacion";
+import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
     tableName: 'operadores',
     timestamps: false
 })
 
-class Operador extends Model {
+class Operador extends Model<
+    InferAttributes<Operador>,
+    InferCreationAttributes<Operador>
+> {
     @Column({ type: DataType.STRING(100) })
     declare nombre: string
 

@@ -1,12 +1,16 @@
 import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript";
 import Asignacion from "./Asignacion";
 import Unidad from "./Unidad";
+import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
     tableName: 'verificacion_ambiental'
 })
 
-class VeriAmbiental extends Model {
+class VeriAmbiental extends Model<
+    InferAttributes<VeriAmbiental>,
+    InferCreationAttributes<VeriAmbiental>
+> {
     @Column({
         type: DataType.STRING(100)
     })

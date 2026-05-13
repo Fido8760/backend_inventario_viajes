@@ -2,6 +2,7 @@ import { Table, Column, Model, ForeignKey, BelongsTo, DataType, HasMany } from '
 import Asignacion from './Asignacion';
 import { QuestionType } from '../types';
 import ImagenesChecklist from './ImagenesChecklist';
+import { InferAttributes, InferCreationAttributes } from 'sequelize';
 
 export type PreguntaRespuesta = {
     idPregunta: number;
@@ -24,7 +25,10 @@ export type RespuestaChecklist = {
     tableName: 'checklist_data'
 })
 
-class DatosCheckList extends Model {
+class DatosCheckList extends Model <
+    InferAttributes<DatosCheckList>,
+    InferCreationAttributes<DatosCheckList>
+> {
     @ForeignKey(() => Asignacion)
     @Column({ 
         type: DataType.INTEGER, 
@@ -45,12 +49,6 @@ class DatosCheckList extends Model {
     })
     declare imagenes: ImagenesChecklist[]
 
-    @Column({
-        type: DataType.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-    })
-    declare completado: boolean;
 
 }
 

@@ -5,6 +5,8 @@ import { prevenirCreacionChecklistDuplicado, validarAsignacionId, validarasignac
 import { CheckListController } from '../controllers/CheckListController'
 import { perteneceAAsignacion, validarChecklistExiste, validarChecklistId, validarChecklistInput, verificarChecklistNoFinalizado } from '../middleware/checklist'
 import { authenticate } from '../middleware/auth'
+import { authorizeRoles } from '../middleware/roles'
+import { Rol } from '../types/roles'
 
 const router = Router()
 
@@ -17,40 +19,37 @@ router.param('checklistId', validarChecklistId)
 router.param('checklistId', validarChecklistExiste)
 router.param('checklistId', perteneceAAsignacion)
 
+router.get('/unidades', AsignacionController.getUnidades)
+router.get('/cajas', AsignacionController.getCajas)
+router.get('/operadores', AsignacionController.getOperadores)
+
 router.get('/', 
     validarParamOpcional,
     AsignacionController.getAll
-)
-
-router.get('/unidades', 
-    AsignacionController.getUnidades
-)
-
-router.get('/cajas', 
-    AsignacionController.getCajas
-)
-
-router.get('/operadores', 
-    AsignacionController.getOperadores
-)
-
-router.post('/', 
-    validarasignacionInput,
-    handleInputErrors,
-    AsignacionController.create
 )
 
 router.get('/:asignacionId', 
     AsignacionController.getByID
 )
 
-router.put('/:asignacionId', 
+router.post('/',
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
+    validarasignacionInput,
+    handleInputErrors,
+    AsignacionController.create
+)
+
+
+
+router.put('/:asignacionId',
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS), 
     validarasignacionInput,
     handleInputErrors,
     AsignacionController.updateByID
 )
 
 router.delete('/:asignacionId',
+    authorizeRoles(Rol.SISTEMAS),
     AsignacionController.deleteById
 )
 
@@ -58,6 +57,7 @@ router.delete('/:asignacionId',
 
 
 router.post('/:asignacionId/checklist',
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
     validarChecklistInput,
     prevenirCreacionChecklistDuplicado,
     handleInputErrors,
@@ -65,11 +65,13 @@ router.post('/:asignacionId/checklist',
 )
 
 router.post('/:asignacionId/checklist/:checklistId/image',
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
     verificarChecklistNoFinalizado,
     CheckListController.uploadImage
 )
 
 router.post('/:asignacionId/checklist/:checklistId/finalizar',
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
     verificarChecklistNoFinalizado,
     CheckListController.finalizarChecklist
 )
@@ -79,12 +81,14 @@ router.get('/:asignacionId/checklist/:checklistId',
 )
 
 router.put('/:asignacionId/checklist/:checklistId',
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
     validarChecklistInput,
     handleInputErrors,
     CheckListController.updateById
 )
 
 router.delete('/:asignacionId/checklist/:checklistId',
+    authorizeRoles(Rol.SISTEMAS),
     CheckListController.deleteById
 )
 

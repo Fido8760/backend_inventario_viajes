@@ -1,12 +1,15 @@
 import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey } from "sequelize-typescript";
-import Asignacion from "./Asignacion";
 import Unidad from "./Unidad";
+import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
     tableName: 'verif_fisico'
 })
 
-class VeriFisico extends Model {
+class VeriFisico extends Model<
+    InferAttributes<VeriFisico>,
+    InferCreationAttributes<VeriFisico>
+> {
     @Column({
         type: DataType.DATE
     })
