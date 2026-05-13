@@ -1,4 +1,4 @@
-import { Table, Model, Column, DataType, HasMany, BelongsTo, ForeignKey, HasOne } from "sequelize-typescript";
+import { Table, Model, Column, DataType, HasMany, HasOne } from "sequelize-typescript";
 import Asignacion from "./Asignacion";
 import Poliza from "./Poliza";
 import TarjetaCirculacion from "./TarjetaCirculacion";
@@ -25,6 +25,13 @@ class Unidad extends Model {
         type: DataType.STRING(100)
     })
     declare u_placas: string
+
+    @Column({ 
+        type: DataType.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    })
+    declare activo: boolean;
 
     @HasMany(() => Asignacion, {
         onUpdate: 'CASCADE',

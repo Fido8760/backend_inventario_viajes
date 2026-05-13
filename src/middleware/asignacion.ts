@@ -3,6 +3,7 @@ import { body, param, query, validationResult } from "express-validator";
 import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
 import DatosCheckList from "../models/DatosCheckList";
+import Operador from "../models/Operador";
 
 declare global {
     namespace Express {
@@ -95,6 +96,13 @@ export const validarasignacionInput = async (req: Request, res: Response, next: 
         const unidad = await Unidad.findByPk(unidadId)
         if(!unidad) {
             res.status(404).json({ errors: [{ msg: `Unidad con ID ${unidadId} no encontrada` }] })
+            return
+        }
+
+        const operadorId = req.body.operadorId
+        const operador = await Operador.findByPk(operadorId)
+        if(!operador) {
+            res.status(404).json({ errors: [{ msg: `Operador con ID ${operadorId} no encontrado` }] })
             return
         }
         

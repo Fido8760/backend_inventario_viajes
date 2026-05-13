@@ -4,6 +4,8 @@ import { v4 as uuid} from 'uuid'
 import DatosCheckList from "../models/DatosCheckList"
 import cloudinary from '../config/cloudinary'
 import ImagenesChecklist from "../models/ImagenesChecklist"
+import sharp from "sharp"
+import fs from 'fs/promises'
 
 export class CheckListController {
 
@@ -39,39 +41,50 @@ export class CheckListController {
         const form = formidable({multiples: false})
         const {checklistId} = req.params
 
-        try {
-            const checklist = new DatosCheckList(req.body)
-            checklist.asignacionId = req.asignacion.id
-
-            form.parse(req, (error, fields, files) => {
-            if (!files.file || !files.file[0]) {
-                return res.status(400).json({ error: 'No se ha subido ninguna imagen' });
+        form.parse(req, async(error, fields, files) => {
+            if(error) {
+                res.status(500).json({ error: 'Error al procesar el formulario '})
+                return
             }
 
-            const fieldId = fields.fieldId?.[0] || 'sin_nombre'
+            if(!files.file || !files.file[0]) {
+                res.status(400).json({ error: 'No se ha subido ninguna imagen' })
+                return
+            }
 
-                cloudinary.uploader.upload(files.file[0].filepath, {public_id: `${fieldId}_${uuid()}` }, 
-                    async function (error, result) {
-                        if(error) {
-                            //console.log(error)
-                            res.status(500).json({error: 'Hubo un error al subir la imagen'})
-                        }
-                        if(result) {
-                            const imagen = await ImagenesChecklist.create({
-                                urlImagen: result.secure_url,
-                                checklistId: checklistId
-                            })
-                            return res.status(201).json({ 
-                                message: "Imagen subida con éxito",
-                                imageUrl: result.secure_url
-                            });
-                        }
-                    })
-            })
-        } catch (error) {
-            //console.log(error)
-            res.status(500).json({error: 'Hubo un error'})
-        }
+            try {
+                const file = files.file[0]
+                const fieldId = fields.fideldId?.[0] || 'sin_nombre'
+                const tempWebpPath = `${file.filepath}_converted.webp`
+
+                await sharp(file.filepath).webp({ quality: 85 }).toFile(tempWebpPath)
+
+                const result = await cloudinary.uploader.upload(tempWebpPath, {
+                    public_id: `${fieldId}_${uuid()}`,
+                    resource_type: 'image',
+                    folder: 'checklist'
+                })
+
+                await Promise.all([
+                    fs.unlink(file.filepath).catch(() => {}),
+                    fs.unlink(tempWebpPath).catch(() => {})
+                ])
+
+                await ImagenesChecklist.create({
+                    urlImagen: result.secure_url,
+                    checklistId
+                })
+
+                res.status(201).json({
+                    message: 'Imagen subida con exito',
+                    imageUrl: result.secure_url
+                })
+                
+            } catch (error) {
+                console.log('Error al subir imagen:', error )
+                res.status(500).json({ error: 'Hubo un error al subir la imagen '})
+            }
+        })
     }
 
 

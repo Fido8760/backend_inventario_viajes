@@ -32,10 +32,10 @@ class Asignacion extends Model {
     @ForeignKey(() => Operador)
     @Column({
         type: DataType.INTEGER,
-        allowNull: true
+        allowNull: false
     })
-    declare operadorId: number | null
-    @BelongsTo(() => Operador, { onDelete: "SET NULL", hooks: true })
+    declare operadorId: number
+    @BelongsTo(() => Operador, { onDelete: "RESTRICT", hooks: true })
     declare operador: Operador
 
     // Cambio principal: HasMany por HasOne

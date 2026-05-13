@@ -27,6 +27,13 @@ class Caja extends Model {
     })
     declare c_anio: number
 
+    @Column({
+        type: DataType.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+    })
+    declare activo: boolean;
+
     @HasMany(() => Asignacion, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'

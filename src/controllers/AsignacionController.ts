@@ -80,7 +80,9 @@ export class AsignacionController {
 
     static getUnidades = async (req: Request, res: Response) => {
         try {
-            const asignacionesUnidades = await Unidad.findAll()
+            const asignacionesUnidades = await Unidad.findAll({
+                where: { activo: 1 }
+            })
             res.json(asignacionesUnidades)
         } catch (error) {
             //console.log(error)
@@ -90,7 +92,9 @@ export class AsignacionController {
     
     static getCajas = async (req: Request, res: Response) => {
         try {
-            const asignacionesCajas = await Caja.findAll()
+            const asignacionesCajas = await Caja.findAll({
+                where: { activo: 1 }
+            })
             res.json(asignacionesCajas)
         } catch (error) {
             //console.log(error)
@@ -100,7 +104,9 @@ export class AsignacionController {
 
     static getOperadores = async (req: Request, res: Response) => {
         try {
-            const asignacionesOperadores = await Operador.findAll()
+            const asignacionesOperadores = await Operador.findAll({
+                where: { activo: 1 }
+            })
             res.json(asignacionesOperadores)
         } catch (error) {
             //console.log(error)
