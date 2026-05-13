@@ -3,7 +3,7 @@ import { AsignacionController } from '../controllers/AsignacionController'
 import { handleInputErrors } from '../middleware/validation'
 import { prevenirCreacionChecklistDuplicado, validarAsignacionId, validarasignacionInput, validarExitenciaViaje, validarParamOpcional } from '../middleware/asignacion'
 import { CheckListController } from '../controllers/CheckListController'
-import { perteneceAAsignacion, validarChecklistExiste, validarChecklistId, validarChecklistInput, verificarChecklistNoFinalizado } from '../middleware/checklist'
+import { perteneceAAsignacion, validarChecklistExiste, validarChecklistId, validarChecklistInput } from '../middleware/checklist'
 import { authenticate } from '../middleware/auth'
 import { authorizeRoles } from '../middleware/roles'
 import { Rol } from '../types/roles'
@@ -66,13 +66,11 @@ router.post('/:asignacionId/checklist',
 
 router.post('/:asignacionId/checklist/:checklistId/image',
     authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
-    verificarChecklistNoFinalizado,
     CheckListController.uploadImage
 )
 
 router.post('/:asignacionId/checklist/:checklistId/finalizar',
     authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
-    verificarChecklistNoFinalizado,
     CheckListController.finalizarChecklist
 )
 
