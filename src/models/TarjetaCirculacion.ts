@@ -4,7 +4,8 @@ import Unidad from "./Unidad";
 import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
-    tableName: 'tajetas_circulacion'
+    tableName: 'tajetas_circulacion',
+    timestamps: false
 })
 
 class TarjetaCirculacion extends Model<

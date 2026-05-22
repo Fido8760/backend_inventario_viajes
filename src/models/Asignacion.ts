@@ -49,15 +49,16 @@ class Asignacion extends Model<
     @BelongsTo(() => Operador, { onDelete: "RESTRICT", hooks: true })
     declare operador: Operador
 
-    // Cambio principal: HasMany por HasOne
     @HasOne(() => DatosCheckList, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     })
-    declare checklist: DatosCheckList // Cambiar de checklists[] a checklist
+    declare checklist: DatosCheckList
 
     @ForeignKey(() => UsuariosChecklist)
+    @Column(DataType.INTEGER)
     declare userId: number
+
     @BelongsTo(() => UsuariosChecklist)
     declare usuario: UsuariosChecklist
     

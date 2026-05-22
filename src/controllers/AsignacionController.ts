@@ -10,6 +10,8 @@ import { Op, Sequelize, Transaction } from "sequelize";
 import { db } from "../config/db"
 import { getPreguntaInfo } from "../helpers/getPreguntaInfo" 
 import { endOfDay, isValid, parseISO, startOfDay } from "date-fns"
+import Respuesta from "../models/RespuestasChecklist"
+import Pregunta from "../models/PreguntasChecklist"
 
 export class AsignacionController {
 
@@ -64,8 +66,8 @@ export class AsignacionController {
                     { model: Operador, attributes: ['nombre', 'apellido_p', 'apellido_m'], required: false},
                     { model: DatosCheckList, attributes: ['id'], required: false}
                 ],
-                subQuery: false, // Crucial para búsquedas con includes
-                logging: console.log // Habilita logs para debug
+                subQuery: false, 
+                logging: console.log 
             });
             
             res.json(asignaciones);
@@ -81,7 +83,10 @@ export class AsignacionController {
     static getUnidades = async (req: Request, res: Response) => {
         try {
             const asignacionesUnidades = await Unidad.findAll({
-                where: { activo: 1 }
+                where: { activo: 1 },
+                order: [
+                    ['no_unidad', 'ASC']
+                ]
             })
             res.json(asignacionesUnidades)
         } catch (error) {
@@ -93,7 +98,10 @@ export class AsignacionController {
     static getCajas = async (req: Request, res: Response) => {
         try {
             const asignacionesCajas = await Caja.findAll({
-                where: { activo: 1 }
+                where: { activo: 1 },
+                order: [
+                    ['c_placas', 'ASC']
+                ]
             })
             res.json(asignacionesCajas)
         } catch (error) {
@@ -105,7 +113,10 @@ export class AsignacionController {
     static getOperadores = async (req: Request, res: Response) => {
         try {
             const asignacionesOperadores = await Operador.findAll({
-                where: { activo: 1 }
+                where: { activo: 1 },
+                order: [
+                    ['apellido_P', 'ASC']
+                ]
             })
             res.json(asignacionesOperadores)
         } catch (error) {
@@ -138,7 +149,14 @@ export class AsignacionController {
                 {   
                     model: DatosCheckList,
                     as: 'checklist',
-                    include: [{model: ImagenesChecklist}]
+                    include: [
+                        { model: ImagenesChecklist },
+                        {
+                            model: Respuesta,
+                            include: [Pregunta],
+                            order: ['orden', 'ASC']
+                        }
+                    ]
                 }
             ]
         })
@@ -255,13 +273,13 @@ export class AsignacionController {
                 transaction
             });
 
-            if (!checklist || !checklist.respuestas) {
+            if (!checklist || !checklist.checklistJson) {
                 console.log(`[LOGIC][limpiarChecklistTracto] No se encontró checklist o respuestas para limpiar.`);
                 return
             }
 
             console.log(`[LOGIC][limpiarChecklistTracto] Checklist ${checklist.id} encontrado. Procesando respuestas...`);
-            let respuestas: RespuestaChecklist = JSON.parse(JSON.stringify(checklist.respuestas)); // Ya es objeto JS
+            let respuestas: RespuestaChecklist = JSON.parse(JSON.stringify(checklist.checklistJson)); 
             let cambiosRealizados = false;
 
             if (respuestas.secciones && Array.isArray(respuestas.secciones)) {
@@ -284,7 +302,7 @@ export class AsignacionController {
             if (cambiosRealizados) {
                 console.log(`[DB][limpiarChecklistTracto] Guardando respuestas limpiadas para checklist ${checklist.id}...`);
                 await checklist.update(
-                    { respuestas }, 
+                    { checklistJson: respuestas }, 
                     { transaction }
                 )
                 console.log(`[DB][limpiarChecklistTracto] Checklist ${checklist.id} actualizado.`);

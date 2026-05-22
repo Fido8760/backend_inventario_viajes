@@ -10,6 +10,7 @@ export const db = new Sequelize({
     password: process.env.DB_PASS,
     host: process.env.DB_HOST,
     dialect: "mysql",
+    timezone: "-06:00",
     port: 3306,
-    logging: false
+    logging: false,
 });

@@ -1,41 +1,55 @@
 import { Request, Response } from "express"
 import formidable from 'formidable'
 import { v4 as uuid} from 'uuid'
-import DatosCheckList from "../models/DatosCheckList"
+import DatosCheckList, { ChecklistStatus } from "../models/DatosCheckList"
 import cloudinary from '../config/cloudinary'
 import ImagenesChecklist from "../models/ImagenesChecklist"
 import sharp from "sharp"
 import fs from 'fs/promises'
 import { AsignacionStatus } from "../types/estados-asignacion"
+import Respuesta from "../models/RespuestasChecklist"
+import Pregunta from "../models/PreguntasChecklist"
 
 export class CheckListController {
 
-    static create = async (req: Request, res: Response) => {
+    static getTemplate = async(req: Request, res: Response) => {
         try {
-            const { checklist } = req.body;
-    
-            if (!checklist) {
-                res.status(400).json({ error: "El checklist es requerido" });
-                return; 
-            }
-    
-            const nuevoChecklist = await DatosCheckList.create({
-                respuestas: checklist,
-                asignacionId: req.asignacion.id,
+            const tieneCaja = req.asignacion.cajaId !== null;
+            const aplica_a = tieneCaja ? ['todos', 'tractocamion'] : ['todos'];
+
+            const preguntas = await Pregunta.findAll({
+                where: { aplica_a },
+                order: [['orden', 'ASC']]
             });
 
-            await req.asignacion.update({ status: AsignacionStatus.FOTOS_PENDIENTES })
-    
-            res.status(201).json({ 
-                message: 'Revisión Creada Correctamente', 
-                id: nuevoChecklist.id 
+            const secciones = preguntas.reduce((acc, p) => {
+                if(!acc[p.seccion]) acc[p.seccion] = [];
+                acc[p.seccion].push(p);
+                return acc;
+            }, {} as Record<string, Pregunta[]>);
+
+            res.json({ secciones })
+        } catch (error) {
+            res.status(500).json({ error: 'No se pudo cargar la plantilla'})
+        }
+    }
+
+    static create = async (req: Request, res: Response) => {
+        try {
+            const nuevoChecklist = await DatosCheckList.create({
+                asignacionId: req.asignacion.id,
+                status: ChecklistStatus.EN_PROGRESO
             });
-            return;
-    
+
+            await req.asignacion.update({ status: AsignacionStatus.CHECKLIST_PENDIENTE });
+
+            res.status(201).json({
+                message: 'Checklist Iniciado',
+                id: nuevoChecklist.id
+            })
         } catch (error) {
             console.error("Error en ChecklistController:", error);
             res.status(500).json({ error: 'Hubo un error' });
-            return;
         }
     }
 
@@ -91,23 +105,76 @@ export class CheckListController {
         })
     }
 
-
-
     static getById = async (req: Request, res: Response) => {
-        res.json(req.checklist)
+        try {
+            const checklist = req.checklist;
+            const tieneCaja = req.asignacion.cajaId !== null;
+            const aplica_a  = tieneCaja ? ['todos', 'tractocamion'] : ['todos'];
+
+            // Preguntas que aplican a esta unidad
+            const preguntas = await Pregunta.findAll({
+                where: { aplica_a },
+                order: [['orden', 'ASC']]
+            });
+
+            // Respuestas ya guardadas
+            const respuestas = await Respuesta.findAll({
+                where: { checklistId: checklist.id },
+                raw: true
+            });
+
+            // Mapa de respuestas para acceso rápido
+            const mapaRespuestas = new Map(respuestas.map(r => [r.preguntaId, r.valor]));
+
+            // Agrupar por sección y combinar con respuestas
+            const secciones = preguntas.reduce((acc, p) => {
+                if (!acc[p.seccion]) acc[p.seccion] = [];
+                acc[p.seccion].push({
+                    preguntaId:  p.id,
+                    texto:       p.texto,
+                    tipo:        p.tipo,
+                    obligatorio: p.obligatorio,
+                    aplica_a:    p.aplica_a,
+                    valor:       mapaRespuestas.get(p.id) ?? null  // null si no tiene respuesta aún
+                });
+                return acc;
+            }, {} as Record<string, any[]>);
+
+            res.json({
+                id:         checklist.id,
+                status:     checklist.status,
+                secciones,
+            });
+
+        } catch (error) {
+            res.status(500).json({ error: 'Hubo un error' });
+        }
     }
 
     static updateById = async (req: Request, res: Response) => {
-        const checklistAActualizar = req.checklist
-        const nuevosDatos = req.body.checklist
-        if(!nuevosDatos) {
-            res.status(400).json({ error: "Faltan los datos del 'checklist' en el body." })
-            return
+        try {
+            const { respuestas } = req.body;
+    
+            if(!respuestas || !respuestas.length) {
+                res.status(400).json({ error: "Faltan las respuestas en el body." });
+                return;
+            }
+
+            await Respuesta.bulkCreate(
+                respuestas.map((r: any) => ({
+                    checklistId: req.checklist.id,
+                    preguntaId: r.preguntaId,
+                    valor: String(r.valor ?? '')
+                })),
+                { updateOnDuplicate: ['valor']}
+            );
+
+            res.json({ message: 'Progreso guardado correctamente' });
+
+        } catch (error) {
+            console.error("Error en updateById:", error);
+            res.status(500).json({ error: 'Hubo un error' });
         }
-        await checklistAActualizar.update({
-            respuestas: nuevosDatos
-        })
-        res.json('Se actualizó correctamente')
     }
 
     static deleteById = async (req: Request, res: Response) => {
@@ -115,8 +182,46 @@ export class CheckListController {
         res.json('Checklist Eliminado')
     }
 
-    static finalizarChecklist = async (req: Request, res: Response) => {
-        const checklist = req.checklist
+    static finalizarChecklist = async (req: Request, res: Response,) => {
+        const checklist = req.checklist;
+        const tieneCaja = req.asignacion.cajaId !== null;
+        const aplica_a = tieneCaja ? ['todos', 'tractocamion'] : ['todos'];
+
+        try {
+            const obligatorias = await Pregunta.findAll({
+                where:  { aplica_a, obligatorio: true },
+                raw: true
+            });
+
+            const respuestas = await Respuesta.findAll({
+                where: { checklistId: checklist.id },
+                raw: true
+            });
+
+            const contestadas = new Set(respuestas.map( r => r.preguntaId));
+            const faltantes = obligatorias
+                .filter(p => !contestadas.has(p.id))
+                .map(p => ({ id: p.id, texto: p.texto, seccion: p.seccion }));
+            
+            if(faltantes.length > 0) {
+                res.status(400).json({
+                    error: `Faltan ${faltantes.length} preguntas obligatorias`,
+                    faltantes
+                })
+                return;
+            }
+
+            await checklist.update({ status: ChecklistStatus.COMPLETO });
+            await req.asignacion.update({ status: AsignacionStatus.FOTOS_PENDIENTES });
+
+            res.json({ message: 'Checklist finalizado, ahora sube las fotos' })
+        } catch (error) {
+            res.status(500).json({ error: 'Error al finalizar el checklist' });
+        }
+    }
+
+    static finalizarFotos = async (req: Request, res: Response) => {
+        const checklist = req.checklist;
 
         const FOTOS_OBLIGATORIAS = [
             'frontal',
@@ -131,14 +236,15 @@ export class CheckListController {
 
         try {
             const imagenes = await ImagenesChecklist.findAll({
-                where: { checklistId: checklist.id }
+                where: { checklistId: checklist.id },
+                attributes: ['fieldId']
             })
 
             const fieldsSubidos = imagenes.map(img => img.fieldId)
             const faltantes = FOTOS_OBLIGATORIAS.filter(f => !fieldsSubidos.includes(f))
 
             if (faltantes.length > 0) {
-                res.status(400).json({ error: 'Faltan fotos obligatorias', faltantes })
+                res.status(400).json({ error: 'Faltan fotos obligatorias o firma', faltantes })
                 return
             }
 

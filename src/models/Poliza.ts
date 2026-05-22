@@ -3,7 +3,8 @@ import Unidad from "./Unidad";
 import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
-    tableName: 'polizas'
+    tableName: 'polizas',
+    timestamps: false
 })
 
 class Poliza extends Model<

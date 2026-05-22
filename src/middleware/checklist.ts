@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { body, param, validationResult } from "express-validator";
-import DatosCheckList from "../models/DatosCheckList";
+import DatosCheckList, { ChecklistStatus } from "../models/DatosCheckList";
 import { questionType } from "../types";
 import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
 import ImagenesChecklist from "../models/ImagenesChecklist";
+import { Rol } from "../types/roles";
+import { AsignacionStatus } from "../types/estados-asignacion";
+import Pregunta, { TipoPregunta } from "../models/PreguntasChecklist";
 
 declare global {
     namespace Express {
@@ -16,106 +19,82 @@ declare global {
 
 export const validarChecklistInput = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        await body("checklist")
-            .exists().withMessage("El campo 'checklist' es requerido")
-            .isObject().withMessage("El checklist debe ser un objeto").run(req);
-
-        await body("checklist.secciones")
-            .exists().withMessage("El campo 'secciones' es requerido")
-            .isArray({ min: 1 }).withMessage("Debe haber al menos una sección").run(req);
-
+        await body("respuestas")
+            .exists().withMessage("El campo 'respuestas' es requerido ")
+            .isArray({ min: 1 }).withMessage("Debe haber al menos una respuesta")
+            .run(req);
+        
         let errors = validationResult(req);
-        if (!errors.isEmpty()) {
+
+        if(!errors.isEmpty()) {
             res.status(400).json({ errors: errors.array() });
-            return 
+            return
         }
-
-        if (!req.params.asignacionId) {
-            res.status(400).json({ error: "asignacionId es requerido" });
-            return 
-        }
-
-        const { secciones } = req.body.checklist;
 
         const asignacion = await Asignacion.findByPk(req.params.asignacionId, {
             include: [{ model: Unidad }]
-        });
+        })
 
-        if (!asignacion) {
+        if(!asignacion) {
             res.status(404).json({ error: "Asignación no encontrada" });
-            return 
+            return;
         }
 
-        for (let i = 0; i < secciones.length; i++) {
-            const seccion = secciones[i];
-            const seccionPrefix = `checklist.secciones[${i}]`;
+        const tieneCaja = asignacion.cajaId !== null;
+        const aplica_a = tieneCaja ? ['todos', 'tractocamion'] : ['todos'];
 
-            await body(`${seccionPrefix}.nombre`)
-                .isString().withMessage("El nombre de la sección debe ser un texto")
-                .notEmpty().withMessage("El nombre de la sección no puede estar vacío")
-                .run(req);
+        const preguntasValidas = await Pregunta.findAll({
+            where: { aplica_a },
+            raw: true
+        });
 
-            await body(`${seccionPrefix}.preguntas`)
-                .isArray({ min: 1 }).withMessage("Cada sección debe tener al menos una pregunta")
-                .run(req);
+        const mapPreguntas = new Map(preguntasValidas.map( p => [p.id, p]));
 
-            for (let j = 0; j < seccion.preguntas.length; j++) {
-                const pregunta = seccion.preguntas[j];
-                const preguntaPrefix = `${seccionPrefix}.preguntas[${j}]`;
+        const { respuestas } = req.body;
+        const erroresRespuestas: string[] = [];
 
-                await body(`${preguntaPrefix}.idPregunta`)
-                    .isInt().withMessage("ID de pregunta inválido")
-                    .notEmpty().withMessage("El ID de pregunta es obligatorio").run(req);
+        for(const r of respuestas) {
+            const pregunta = mapPreguntas.get(r.preguntaId);
 
-                await body(`${preguntaPrefix}.pregunta`)
-                    .isString().withMessage("La pregunta debe ser un texto")
-                    .notEmpty().withMessage("La pregunta no puede estar vacía").run(req);
+            if(!pregunta) {
+                erroresRespuestas.push(`Pregunta ${r.preguntaId} no existe o no aplica a esta unidad`);
+                continue;
+            }
+            
+            switch(pregunta.tipo) {
+                case TipoPregunta.NUMERO: 
+                    if(isNaN(Number(r.valor))) {
+                        erroresRespuestas.push(`Pregunta ${r.preguntaId}: debe ser un numero`);
+                    }
+                    break;
+                case TipoPregunta.SI_NO:
+                    if(!['si', 'no'].includes(r.valor)) {
+                        erroresRespuestas.push(`Pregunta ${r.preguntaId}: debe ser 'si' o 'no' `)
+                    }
+                    break;
+                case TipoPregunta.OPCIONES:
+                    if(!['BUENO', 'REGULAR', 'MALO'].includes(r.valor)) {
+                        erroresRespuestas.push(`Pregunta ${r.preguntaId}: debe ser BUENO, REGULAR o MALO`)
+                    }
+                    break;
+                case TipoPregunta.TEXTO:
+                    break;
+            }
 
-                await body(`${preguntaPrefix}.tipo`)
-                    .isIn(Object.values(questionType)).withMessage("Tipo de pregunta no válido")
-                    .run(req);
-
-                switch (pregunta.tipo) {
-                    case questionType.NUMBER:
-                        await body(`${preguntaPrefix}.respuesta`)
-                            .isNumeric().withMessage("La respuesta debe ser un número").run(req);
-                        break;
-
-                    case questionType.YES_NO:
-                        await body(`${preguntaPrefix}.respuesta`)
-                            .isIn(["si", "no"]).withMessage("La respuesta debe ser 'si' o 'no'").run(req);
-                        break;
-
-                    case questionType.OPTIONS:
-                        await body(`${preguntaPrefix}.respuesta`)
-                            .isIn(["BUENO", "MALO", "REGULAR"]).withMessage("Respuesta no válida").run(req);
-                        break;
-
-                    case questionType.TEXT:
-                        await body(`${preguntaPrefix}.respuesta`)
-                            .optional()
-                            .isString().withMessage("La respuesta debe ser un texto").run(req);
-                        break;
-                }
-
-                if (pregunta.aplicaA === "tractocamion" && asignacion.unidad.tipo_unidad !== "TRACTOCAMION") {
-                    await body(`${preguntaPrefix}.aplicaA`)
-                        .custom(() => false)
-                        .withMessage("Esta pregunta solo aplica a tractocamiones").run(req);
-                }
+            if(pregunta.obligatorio && (r.valor === null || r.valor === '')) {
+                erroresRespuestas.push(`Pregunta ${r.preguntaId}: es obligatoria`);
             }
         }
 
-        const finalErrors = validationResult(req);
-        if (!finalErrors.isEmpty()) {
-            res.status(400).json({ errors: finalErrors.array() });
-            return 
+        if(erroresRespuestas.length > 0) {
+            res.status(400).json({ errors: erroresRespuestas });
         }
 
         next();
+        
     } catch (error) {
-        console.error("Error en validarChecklistInput:", error);
-        res.status(500).json({ error: "Error interno del servidor" });
+        console.log("Error en validarchecklistInput:", error);
+        res.status(500).json({ error: "Error interno en el servidor" })
     }
 };
 
@@ -164,6 +143,28 @@ export const perteneceAAsignacion = async (req: Request, res: Response, next: Ne
     }
 
     next()
+}
+
+export const verificarChecklistEditable = (req: Request, res: Response, next: NextFunction) => {
+    const rol = req.authenticatedUser?.rol;
+
+    if(rol === Rol.SISTEMAS) {
+        return next();
+    }
+
+    if(req.asignacion.status === AsignacionStatus.COMPLETA ) {
+        res.status(403).json({ error: 'No puedes modificar un checklist de una asignación ya finalizada'});
+        return;
+    }
+    next();
+};
+
+export const verificarChecklistCompleto  = (req: Request, res: Response, next: NextFunction ) => {
+    if(req.checklist.status !== ChecklistStatus.COMPLETO) {
+        res.status(403).json({ error: 'Debes finalizar primero el checklist antes de subir fotos'});
+        return;
+    }
+    next();
 }
 
 

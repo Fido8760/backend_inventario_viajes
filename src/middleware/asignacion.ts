@@ -34,6 +34,8 @@ export const validarAsignacionId = async (req: Request, res: Response, next: Nex
 export const validarExitenciaViaje = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { asignacionId } = req.params
+        
+        console.log('asignacionId:', asignacionId);
         const asignacion = await Asignacion.findByPk(asignacionId, {
             include: [
                 {

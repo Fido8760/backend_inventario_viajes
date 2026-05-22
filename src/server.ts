@@ -6,11 +6,14 @@ import morgan from 'morgan'
 import { db } from './config/db'
 import asignacionRouter from './routes/asignacionRouter'
 import authRouter from './routes/authRouter'
+import dashboardRouter from './routes/dashboardRouter';
+import { seedPreguntas } from './seeders/preguntas.seed'
 
 async function connectDB() {
     try {
         await db.authenticate()
-        db.sync()
+        await db.sync()
+        await seedPreguntas();
         console.log(colors.blue.bold('Conexión exitosa a BD'))
     } catch (error) {
         console.log(error)
@@ -30,6 +33,7 @@ app.use(morgan('dev'))
 
 app.use(express.json())
 
+app.use('/api/v1/dashboard', dashboardRouter)
 app.use('/api/v1/assignments', asignacionRouter)
 app.use('/api/v1/auth', authRouter)
 

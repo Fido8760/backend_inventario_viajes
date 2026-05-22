@@ -1,41 +1,90 @@
-import { Table, Model, Column, DataType, HasMany, HasOne } from "sequelize-typescript";
+import {
+    Table,
+    Model,
+    Column,
+    DataType,
+    HasMany,
+    HasOne
+} from "sequelize-typescript";
+
+import {
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional
+} from "sequelize";
+
 import Asignacion from "./Asignacion";
 import Poliza from "./Poliza";
 import TarjetaCirculacion from "./TarjetaCirculacion";
 import VeriAmbiental from "./VeriAmbiental";
 import VeriFisico from "./VeriFisico";
-import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
     tableName: 'unidades',
     timestamps: false
 })
 
-class Unidad extends  Model<
+class Unidad extends Model<
     InferAttributes<Unidad>,
     InferCreationAttributes<Unidad>
 > {
+
+    declare id: CreationOptional<number>
+
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.STRING(100),
+        allowNull: false
     })
     declare no_unidad: string
 
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.STRING(100),
+        allowNull: false
     })
     declare tipo_unidad: string
 
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.STRING(100),
+        allowNull: false
     })
     declare u_placas: string
 
-    @Column({ 
+    @Column({
+        type: DataType.STRING(255),
+        allowNull: true
+    })
+    declare u_serie: string | null
+
+    @Column({
+        type: DataType.STRING(255),
+        allowNull: true
+    })
+    declare u_marca: string | null
+
+    @Column({
+        type: DataType.STRING(255),
+        allowNull: true
+    })
+    declare modelo: string | null
+
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: true
+    })
+    declare u_anio: number | null
+
+    @Column({
+        type: DataType.STRING(255),
+        allowNull: true
+    })
+    declare no_motor: string | null
+
+    @Column({
         type: DataType.BOOLEAN,
         defaultValue: true,
         allowNull: false
     })
-    declare activo: boolean;
+    declare activo: CreationOptional<boolean>
 
     @HasMany(() => Asignacion, {
         onUpdate: 'CASCADE',
@@ -48,13 +97,12 @@ class Unidad extends  Model<
 
     @HasOne(() => TarjetaCirculacion)
     declare tarjetaCirc: TarjetaCirculacion
-    
+
     @HasOne(() => VeriAmbiental)
     declare veriAmbiental: VeriAmbiental
 
     @HasOne(() => VeriFisico)
-    declare veriFidico: VeriFisico
-
+    declare veriFisico: VeriFisico
 }
 
 export default Unidad

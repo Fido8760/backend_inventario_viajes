@@ -3,7 +3,8 @@ import Unidad from "./Unidad";
 import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
-    tableName: 'verif_fisico'
+    tableName: 'verif_fisico',
+    timestamps: false
 })
 
 class VeriFisico extends Model<
@@ -11,20 +12,21 @@ class VeriFisico extends Model<
     InferCreationAttributes<VeriFisico>
 > {
     @Column({
-        type: DataType.DATE
+        type: DataType.STRING
     })
     declare folio_fis: string
     
     @Column({
         type: DataType.DATE
     })
-    declare fecha_verif_fis: string
+    declare fecha_verif_fis: Date
 
     @ForeignKey(() => Unidad)
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.INTEGER
     })
-    declare id_unidad: string
+    declare id_unidad: number
+    
     @BelongsTo(() => Unidad)
     declare unidad: Unidad
 }

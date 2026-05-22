@@ -1,5 +1,17 @@
-import { Table, Model, Column, DataType, HasMany } from "sequelize-typescript";
-import { InferAttributes, InferCreationAttributes } from "sequelize";
+import {
+    Table,
+    Model,
+    Column,
+    DataType,
+    HasMany
+} from "sequelize-typescript";
+
+import {
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional
+} from "sequelize";
+
 import Asignacion from "./Asignacion";
 
 @Table({
@@ -7,36 +19,55 @@ import Asignacion from "./Asignacion";
     timestamps: false
 })
 
-class Caja extends Model <
+class Caja extends Model<
     InferAttributes<Caja>,
     InferCreationAttributes<Caja>
 > {
-    @Column({
-        type: DataType.STRING(100)
-    })
-    declare numero_caja: string
+
+    declare id: CreationOptional<number>
 
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.STRING(50),
+        allowNull: true
     })
-    declare c_placas: string
+    declare numero_caja: string | null
 
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.STRING(50),
+        allowNull: true
     })
-    declare c_marca: string
+    declare c_placas: string | null
 
     @Column({
-        type: DataType.INTEGER
+        type: DataType.STRING(50),
+        allowNull: true
     })
-    declare c_anio: number
+    declare c_serie: string | null
+
+    @Column({
+        type: DataType.STRING(50),
+        allowNull: true
+    })
+    declare capacidad: string | null
+
+    @Column({
+        type: DataType.STRING(50),
+        allowNull: true
+    })
+    declare c_marca: string | null
+
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: true
+    })
+    declare c_anio: number | null
 
     @Column({
         type: DataType.BOOLEAN,
         defaultValue: true,
         allowNull: false
     })
-    declare activo: boolean;
+    declare activo: CreationOptional<boolean>
 
     @HasMany(() => Asignacion, {
         onUpdate: 'CASCADE',

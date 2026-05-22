@@ -1,8 +1,14 @@
-import { Table, Column, Model, ForeignKey, BelongsTo, DataType, HasMany } from 'sequelize-typescript';
+import { Table, Column, Model, ForeignKey, BelongsTo, DataType, HasMany, Default } from 'sequelize-typescript';
 import Asignacion from './Asignacion';
 import { QuestionType } from '../types';
 import ImagenesChecklist from './ImagenesChecklist';
 import { InferAttributes, InferCreationAttributes } from 'sequelize';
+import Respuesta from './RespuestasChecklist';
+
+export enum ChecklistStatus {
+    EN_PROGRESO = 'EN_PROGRESO',
+    COMPLETO = 'COMPLETO',
+}
 
 export type PreguntaRespuesta = {
     idPregunta: number;
@@ -40,14 +46,27 @@ class DatosCheckList extends Model <
     @BelongsTo(() => Asignacion)
     declare asignacion: Asignacion;
 
-    @Column({ type: DataType.JSON, allowNull: false })
-    declare respuestas: RespuestaChecklist;
+    @Default(ChecklistStatus.EN_PROGRESO)
+    @Column({
+        type: DataType.ENUM(...Object.values(ChecklistStatus)),
+        allowNull: false
+    })
+    declare status: ChecklistStatus;
+
+    @Column({ type: DataType.JSON, allowNull: true })
+    declare checklistJson: RespuestaChecklist;
 
     @HasMany(() => ImagenesChecklist, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     })
     declare imagenes: ImagenesChecklist[]
+
+    @HasMany(() => Respuesta, {
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+    })
+    declare respuestas: Respuesta[]
 
 
 }

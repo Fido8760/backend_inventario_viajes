@@ -4,7 +4,8 @@ import Unidad from "./Unidad";
 import { InferAttributes, InferCreationAttributes } from "sequelize";
 
 @Table({
-    tableName: 'verificacion_ambiental'
+    tableName: 'verificacion_ambiental',
+    timestamps: false
 })
 
 class VeriAmbiental extends Model<
@@ -23,9 +24,10 @@ class VeriAmbiental extends Model<
 
     @ForeignKey(() => Unidad)
     @Column({
-        type: DataType.STRING(100)
+        type: DataType.INTEGER
     })
-    declare id_unidad: string
+    declare id_unidad: number
+
     @BelongsTo(() => Unidad)
     declare unidad: Unidad
 }
