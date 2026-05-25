@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
 import Asignacion from "../models/Asignacion"
+import cloudinary from '../config/cloudinary'
 import DatosCheckList, { RespuestaChecklist } from "../models/DatosCheckList"
 import Operador from "../models/Operador"
 import Unidad from "../models/Unidad"
@@ -316,7 +317,32 @@ export class AsignacionController {
     }
 
     static deleteById = async (req: Request, res: Response) => {
-        await req.asignacion.destroy()
-        res.status(201).json('Asignación Eliminada')
+        try {
+            const asignacion = req.asignacion;
+
+            const checklist = await DatosCheckList.findOne({
+                where: { asignacionId: asignacion.id },
+            });
+
+            if(checklist) {
+                const imagenes = await ImagenesChecklist.findAll({
+                    where: { checklistId: checklist.id }
+                });
+
+                if(imagenes.length > 0) {
+                    await Promise.all(
+                        imagenes
+                            .filter(img => img.publicId !== null && img.publicId !== undefined)
+                            .map(img => cloudinary.uploader.destroy(img.publicId))
+                    )
+                }
+            }
+
+            await req.asignacion.destroy()
+            res.status(201).json('Asignación Eliminada')
+        } catch (error) {
+            console.error('Error al eliminar asignación:', error)
+            res.status(500).json({ error: 'Hubo un error al eliminar la asignación' })
+        }
     }
 }
