@@ -74,6 +74,14 @@ export class CheckListController {
                 const fieldId = fields.fieldId?.[0] || 'sin_nombre'
                 const tempWebpPath = `${file.filepath}_converted.webp`
 
+                const imagenExistente = await ImagenesChecklist.findOne({
+                    where: { checklistId, fieldId }
+                });
+
+                if (imagenExistente !== null && imagenExistente !== undefined && imagenExistente.publicId) {
+                    await cloudinary.uploader.destroy(imagenExistente.publicId)
+                }
+
                 await sharp(file.filepath).webp({ quality: 85 }).toFile(tempWebpPath)
 
                 const result = await cloudinary.uploader.upload(tempWebpPath, {
@@ -87,11 +95,19 @@ export class CheckListController {
                     fs.unlink(tempWebpPath).catch(() => {})
                 ])
 
-                await ImagenesChecklist.create({
-                    urlImagen: result.secure_url,
-                    checklistId,
-                    fieldId
-                })
+                if (imagenExistente !== null && imagenExistente !== undefined) {
+                    await imagenExistente.update({
+                        urlImagen: result.secure_url,
+                        publicId:  result.public_id,
+                    })
+                } else {
+                    await ImagenesChecklist.create({
+                        urlImagen: result.secure_url,
+                        publicId:  result.public_id,
+                        checklistId,
+                        fieldId
+                    })
+                }
 
                 res.status(201).json({
                     message: 'Imagen subida con exito',
@@ -178,8 +194,32 @@ export class CheckListController {
     }
 
     static deleteById = async (req: Request, res: Response) => {
-        await req.checklist.destroy()
-        res.json('Checklist Eliminado')
+        try {
+            const checklist = req.checklist;
+
+            // 1. Eliminar imágenes en Cloudinary
+            const imagenes = await ImagenesChecklist.findAll({
+                where: { checklistId: checklist.id }
+            })
+
+            await Promise.all(
+                imagenes
+                    .filter(img => img.publicId !== null && img.publicId !== undefined)
+                    .map(img => cloudinary.uploader.destroy(img.publicId))
+            )
+
+            // 2. Regresar la asignación a CREADA
+            await req.asignacion.update({ status: AsignacionStatus.CREADA })
+
+            // 3. Eliminar checklist (CASCADE elimina imágenes e BD automáticamente)
+            await checklist.destroy()
+
+            res.json({ message: 'Checklist eliminado, asignación regresada a CREADA' })
+
+        } catch (error) {
+            console.error('Error al eliminar checklist:', error)
+            res.status(500).json({ error: 'Hubo un error al eliminar el checklist' })
+        }
     }
 
     static finalizarChecklist = async (req: Request, res: Response,) => {

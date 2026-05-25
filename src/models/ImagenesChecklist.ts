@@ -18,12 +18,19 @@ class ImagenesChecklist extends Model<
     declare urlImagen: string
 
     @Column({
-        field: 'field_id',  // 👈 esto falta
+        field: 'field_id',
         type: DataType.STRING(50),
         allowNull: false,
         defaultValue: 'sin_nombre'
     })
     declare fieldId: string
+
+    @Column({
+        field: 'public_id',
+        type: DataType.STRING(200),
+        allowNull: true
+    })
+    declare publicId: string
 
     @ForeignKey(() => DatosCheckList)
     @Column({
