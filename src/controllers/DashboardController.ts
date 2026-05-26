@@ -106,14 +106,17 @@ export class DashboardController {
     
     static getUnidadesCriticas  = async (req: Request, res: Response) => {
         try {
+
+            const page = Math.max(1, parseInt(req.query.page as string) || 1);
+            const limit = Math.max(1, parseInt(req.query.limit as string) || 10);
+            const offset = (page - 1) * limit;
+
             const fechaLimite = new Date();
             fechaLimite.setDate(fechaLimite.getDate() - 30);
 
             const unidades = await Unidad.findAll({
                 where: { activo: true},
-                order: [
-                    ['no_unidad', 'ASC']
-                ],
+                order: [['no_unidad', 'ASC']],
                 include: [{
                     model: Asignacion,
                     required: false,
@@ -178,9 +181,22 @@ export class DashboardController {
             criticas.sort((a, b) => {
                 if (a.motivo === 'sin_checklist' && b.motivo !== 'sin_checklist') return -1;
                 if (a.motivo === 'sin_checklist' && b.motivo !== 'sin_checklist') return 1;
+                return (b.diasSinRevision ?? 0) - (a.diasSinRevision ?? 0);
             });
 
-            res.json(criticas);
+            const total = criticas.length;
+            const totalPages = Math.ceil(total /limit);
+            const data = criticas.slice(offset, offset + limit);
+
+            res.json({
+                data,
+                meta: {
+                    total,
+                    page,
+                    limit,
+                    totalPages
+                }
+            });
 
         } catch (error) {
             res.status(500).json({error: 'Hubo un error'})
@@ -201,10 +217,7 @@ export class DashboardController {
                     }
                 ]
             })
-
-            console.log('Sin fotos encontrados:', checklists.length)
  
-            
             const sinFotos = checklists.map(c => ({
                 checklistId:    c.id,
                 asignacionId:   c.asignacionId,

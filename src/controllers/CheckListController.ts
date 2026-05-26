@@ -55,8 +55,9 @@ export class CheckListController {
 
     
     static uploadImage = async (req: Request, res: Response) => {
-        const form = formidable({multiples: false})
-        const checklistId = +req.params.checklistId
+        const form = formidable({multiples: false});
+        const checklistId = +req.params.checklistId;
+        const asignacion = req.asignacion;
 
         form.parse(req, async(error, fields, files) => {
             if(error) {
@@ -73,6 +74,8 @@ export class CheckListController {
                 const file = files.file[0]
                 const fieldId = fields.fieldId?.[0] || 'sin_nombre'
                 const tempWebpPath = `${file.filepath}_converted.webp`
+                const fecha = new Date().toISOString().split('T')[0];
+                const noUnidad = asignacion.unidad?.no_unidad ?? `unidadId_${asignacion.unidadId}`;
 
                 const imagenExistente = await ImagenesChecklist.findOne({
                     where: { checklistId, fieldId }
@@ -87,7 +90,7 @@ export class CheckListController {
                 const result = await cloudinary.uploader.upload(tempWebpPath, {
                     public_id: `${fieldId}_${uuid()}`,
                     resource_type: 'image',
-                    folder: 'checklist'
+                    folder: `checklist/${noUnidad}/${fecha}`
                 })
 
                 await Promise.all([
