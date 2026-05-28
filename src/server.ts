@@ -7,6 +7,7 @@ import { db } from './config/db'
 import asignacionRouter from './routes/asignacionRouter'
 import authRouter from './routes/authRouter'
 import dashboardRouter from './routes/dashboardRouter';
+import storageRouter from './routes/storageRouter';
 import { seedPreguntas } from './seeders/preguntas.seed'
 
 async function connectDB() {
@@ -33,8 +34,9 @@ app.use(morgan('dev'))
 
 app.use(express.json())
 
-app.use('/api/v1/dashboard', dashboardRouter)
-app.use('/api/v1/assignments', asignacionRouter)
-app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/dashboard', dashboardRouter);
+app.use('/api/v1/storage', storageRouter);
+app.use('/api/v1/assignments', asignacionRouter);
+app.use('/api/v1/auth', authRouter);
 
 export default app
