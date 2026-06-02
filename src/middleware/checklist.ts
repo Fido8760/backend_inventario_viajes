@@ -156,14 +156,35 @@ export const verificarChecklistEditable = (req: Request, res: Response, next: Ne
         res.status(403).json({ error: 'No puedes modificar un checklist de una asignación ya finalizada'});
         return;
     }
+
+    if(rol === Rol.VIGILANTE) {
+        res.status(403).json({ error: 'El vigilante solo puede actuar sobre unidades en ruta'});
+        return;
+    }
     next();
 };
 
-export const verificarChecklistCompleto  = (req: Request, res: Response, next: NextFunction ) => {
-    if(req.checklist.status !== ChecklistStatus.COMPLETO) {
-        res.status(403).json({ error: 'Debes finalizar primero el checklist antes de subir fotos'});
+export const verificarChecklistCompleto = (req: Request, res: Response, next: NextFunction) => {
+    const rol = req.authenticatedUser?.rol;
+
+    // El vigilante opera sobre asignaciones EN_RUTA, donde el checklist
+    // ya está COMPLETO por definición — no necesita esta validación
+    if (rol === Rol.VIGILANTE || rol === Rol.SISTEMAS) return next();
+
+    if (req.checklist.status !== ChecklistStatus.COMPLETO) {
+        res.status(403).json({ error: 'Debes finalizar primero el checklist antes de subir fotos' });
         return;
     }
+
+    next();
+};
+
+export const verificarAsignacionEnRuta = (req: Request, res: Response, next: NextFunction) => {
+    if(req.asignacion.status !== AsignacionStatus.EN_RUTA){
+        res.status(403).json({ error: 'Esta acción solo está disponible para unidades en ruta' });
+        return; 
+    }
+
     next();
 }
 

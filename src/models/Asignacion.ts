@@ -40,6 +40,12 @@ class Asignacion extends Model<
     })
     declare status: AsignacionStatus
 
+    @Column({
+        type: DataType.TEXT,
+        allowNull: true
+    })
+    declare observaciones_entrada: string | null;
+
     @ForeignKey(() => Operador)
     @Column({
         type: DataType.INTEGER,

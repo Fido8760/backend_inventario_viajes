@@ -5,6 +5,7 @@ import Unidad from "../models/Unidad";
 import DatosCheckList from "../models/DatosCheckList";
 import Operador from "../models/Operador";
 import { Rol } from "../types/roles";
+import { AsignacionStatus } from "../types/estados-asignacion";
 
 declare global {
     namespace Express {
@@ -179,21 +180,28 @@ export const validarParamOpcional = async (req: Request, res: Response, next: Ne
     next()
 }
 
-export const verificarAsignacionEditable = async (req: Request, res: Response, next: NextFunction) => {
-    const asignacion = req.asignacion
-    const rol = req.authenticatedUser?.rol as Rol
+export const verificarChecklistEditable = (req: Request, res: Response, next: NextFunction) => {
+    const rol = req.authenticatedUser?.rol;
 
-    // SISTEMAS puede editar siempre
-    if (rol === Rol.SISTEMAS) {
-        next()
-        return
+    if (rol === Rol.SISTEMAS) return next();
+
+    // Nadie modifica una asignación ya completa
+    if (req.asignacion.status === AsignacionStatus.COMPLETA) {
+        res.status(403).json({ error: 'No puedes modificar un checklist de una asignación ya finalizada' });
+        return;
     }
 
-    // CAPTURISTA no puede editar si ya tiene checklist
-    if (asignacion.checklist) {
-        res.status(403).json({ error: 'No puedes editar una asignación que ya tiene checklist' })
-        return
+    // VIGILANTE solo puede actuar cuando está EN_RUTA
+    if (rol === Rol.VIGILANTE && req.asignacion.status !== AsignacionStatus.EN_RUTA) {
+        res.status(403).json({ error: 'El vigilante solo puede actuar sobre unidades en ruta' });
+        return;
     }
 
-    next()
-}
+    // CAPTURISTA no puede tocar nada en EN_RUTA — esa fase es del vigilante
+    if (rol === Rol.CAPTURISTA && req.asignacion.status === AsignacionStatus.EN_RUTA) {
+        res.status(403).json({ error: 'La unidad está en ruta, solo vigilancia puede registrar la entrada' });
+        return;
+    }
+
+    next();
+};

@@ -13,6 +13,7 @@ import { getPreguntaInfo } from "../helpers/getPreguntaInfo"
 import { endOfDay, isValid, parseISO, startOfDay } from "date-fns"
 import Respuesta from "../models/RespuestasChecklist"
 import Pregunta from "../models/PreguntasChecklist"
+import { AsignacionStatus } from "../types/estados-asignacion"
 
 export class AsignacionController {
 
@@ -63,7 +64,7 @@ export class AsignacionController {
                 include: [
                     { model: UsuariosChecklist, attributes: ['name', 'lastname', 'rol'] },
                     { model: Unidad, attributes: ['no_unidad', 'u_placas', 'tipo_unidad'], required: false },
-                    { model: Caja, attributes: ['c_placas', 'c_marca'], required: false },
+                    { model: Caja, attributes: ['c_placas', 'c_marca', 'numero_caja'], required: false },
                     { model: Operador, attributes: ['nombre', 'apellido_p', 'apellido_m'], required: false},
                     { model: DatosCheckList, attributes: ['id'], required: false}
                 ],
@@ -101,7 +102,7 @@ export class AsignacionController {
             const asignacionesCajas = await Caja.findAll({
                 where: { activo: 1 },
                 order: [
-                    ['c_placas', 'ASC']
+                    ['numero_caja', 'ASC']
                 ]
             })
             res.json(asignacionesCajas)
@@ -343,6 +344,28 @@ export class AsignacionController {
         } catch (error) {
             console.error('Error al eliminar asignación:', error)
             res.status(500).json({ error: 'Hubo un error al eliminar la asignación' })
+        }
+    }
+
+    static getEnRuta = async (req: Request, res: Response) => {
+        try {
+            const asignaciones = await Asignacion.findAll({
+                where: { status: AsignacionStatus.EN_RUTA },
+                include: [
+                    { model: Unidad, attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas'] },
+                    { model: Operador, attributes: ['id', 'nombre', 'apellido_p', 'apellido_m'] },
+                    {
+                        model: DatosCheckList,
+                        as: 'checklist',
+                        include: [{ model: ImagenesChecklist }]
+                    }
+                ],
+                order: [['createdAt', 'DESC']]
+            });
+            res.status(200).json({ asignaciones });
+        } catch (error) {
+            console.log('Error en getEnRuta:', error);
+            res.status(500).json({ error: 'Error al obtener las unidades en ruta' });
         }
     }
 }

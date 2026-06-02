@@ -291,11 +291,48 @@ export class CheckListController {
                 return
             }
 
-            await req.asignacion.update({ status: AsignacionStatus.COMPLETA })
+            await req.asignacion.update({ status: AsignacionStatus.EN_RUTA })
             res.json({ message: 'Checklist Finalizado Correctamente' })
 
         } catch (error) {
             res.status(500).json({ error: 'Error al finalizar el checklist' })
+        }
+    }
+
+    static registrarEntrada = async (req: Request, res: Response) => {
+        const checklist = req.checklist;
+        const { observaciones } = req.body;
+        const FOTOS_ENTRADA_OBLIGATORIAS = [
+            'entrada_frontal',
+            'entrada_trasera',
+            'entrada_izquierdo',
+            'entrada_derecho',
+        ];
+
+        try {
+            const imagenes = await ImagenesChecklist.findAll({
+                where: { checklistId: checklist.id },
+                attributes: ['fieldId']
+            });
+
+            const fieldsSubidos = imagenes.map(img => img.fieldId);
+            const faltantes = FOTOS_ENTRADA_OBLIGATORIAS.filter(f => !fieldsSubidos.includes(f));
+
+            if(faltantes.length > 0) {
+                res.status(400).json({ error: 'Faltan fotos de entrada obligatorias', faltantes });
+                return;
+            }
+
+            await req.asignacion.update({
+                status: AsignacionStatus.COMPLETA,
+                observaciones_entrada: observaciones || null
+            });
+
+            res.json({ message: 'Entrada registrada y asignación completada con éxito' });
+
+        } catch (error) {
+            console.error("Error al registrar entrada:", error)
+            res.status(500).json({ error: 'Error al registrar la entrada de la unidad' })
         }
     }
 }
