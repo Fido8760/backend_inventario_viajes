@@ -88,6 +88,7 @@ export const validarChecklistInput = async (req: Request, res: Response, next: N
 
         if(erroresRespuestas.length > 0) {
             res.status(400).json({ errors: erroresRespuestas });
+            return;
         }
 
         next();

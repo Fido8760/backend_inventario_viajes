@@ -354,6 +354,7 @@ export class AsignacionController {
                 include: [
                     { model: Unidad, attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas'] },
                     { model: Operador, attributes: ['id', 'nombre', 'apellido_p', 'apellido_m'] },
+                    { model: Caja, attributes: ['id', 'numero_caja', 'c_placas'], required: false },
                     {
                         model: DatosCheckList,
                         as: 'checklist',
@@ -362,7 +363,7 @@ export class AsignacionController {
                 ],
                 order: [['createdAt', 'DESC']]
             });
-            res.status(200).json({ asignaciones });
+            res.json({ total: asignaciones.length, asignaciones })
         } catch (error) {
             console.log('Error en getEnRuta:', error);
             res.status(500).json({ error: 'Error al obtener las unidades en ruta' });

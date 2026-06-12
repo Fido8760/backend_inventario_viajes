@@ -1,13 +1,15 @@
-import express from 'express' 
-import cors from 'cors'
-import { corsConfig } from './config/cors'
-import colors from 'colors'
-import morgan from 'morgan'
-import { db } from './config/db'
-import asignacionRouter from './routes/asignacionRouter'
+import express from 'express'; 
+import cors from 'cors';
+import { corsConfig } from './config/cors';
+import colors from 'colors';
+import morgan from 'morgan';
+import { db } from './config/db';
+import asignacionRouter from './routes/asignacionRouter';
+import inspeccionesRouter from './routes/inspeccionRouter';
 import authRouter from './routes/authRouter'
 import dashboardRouter from './routes/dashboardRouter';
 import storageRouter from './routes/storageRouter';
+import searchRouter from './routes/searchRouter';
 import { seedPreguntas } from './seeders/preguntas.seed'
 
 async function connectDB() {
@@ -34,6 +36,8 @@ app.use(morgan('dev'))
 
 app.use(express.json())
 
+app.use('/api/v1/inspecciones', inspeccionesRouter);
+app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/storage', storageRouter);
 app.use('/api/v1/assignments', asignacionRouter);

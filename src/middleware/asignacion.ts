@@ -111,11 +111,19 @@ export const validarasignacionInput = async (req: Request, res: Response, next: 
         }
         
         if(unidad.tipo_unidad === 'TRACTOCAMION') {
-            await body('cajaId')
-                .notEmpty().withMessage('La placa del remolque es obligatorio para tractocamiones')
-                .isNumeric().withMessage('Seleccion no válida para remolque')
-                .custom(value => Number(value) > 0).withMessage('Selección no válida para remolque')
-                .run(req);
+            const cajaExterna = req.body.caja_externa === true || req.body.caja_externa === 'true'
+ 
+            if (!cajaExterna) {
+                // Solo exige cajaId si la caja NO es externa
+                await body('cajaId')
+                    .notEmpty().withMessage('La placa del remolque es obligatorio para tractocamiones')
+                    .isNumeric().withMessage('Selección no válida para remolque')
+                    .custom(value => Number(value) > 0).withMessage('Selección no válida para remolque')
+                    .run(req)
+            } else {
+                // caja_externa = true: cajaId puede ser null
+                req.body.cajaId = null
+            }
         } else {
             
             await body('cajaId')

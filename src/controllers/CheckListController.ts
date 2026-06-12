@@ -9,13 +9,14 @@ import fs from 'fs/promises'
 import { AsignacionStatus } from "../types/estados-asignacion"
 import Respuesta from "../models/RespuestasChecklist"
 import Pregunta from "../models/PreguntasChecklist"
+import { getAplicaAPorCaja } from "../helpers/getAplicaA"
 
 export class CheckListController {
 
     static getTemplate = async(req: Request, res: Response) => {
         try {
-            const tieneCaja = req.asignacion.cajaId !== null;
-            const aplica_a = tieneCaja ? ['todos', 'tractocamion'] : ['todos'];
+
+            const aplica_a = getAplicaAPorCaja(req.asignacion.cajaId)
 
             const preguntas = await Pregunta.findAll({
                 where: { aplica_a },
@@ -127,8 +128,8 @@ export class CheckListController {
     static getById = async (req: Request, res: Response) => {
         try {
             const checklist = req.checklist;
-            const tieneCaja = req.asignacion.cajaId !== null;
-            const aplica_a  = tieneCaja ? ['todos', 'tractocamion'] : ['todos'];
+
+            const aplica_a = getAplicaAPorCaja(req.asignacion.cajaId);
 
             // Preguntas que aplican a esta unidad
             const preguntas = await Pregunta.findAll({
@@ -173,11 +174,6 @@ export class CheckListController {
     static updateById = async (req: Request, res: Response) => {
         try {
             const { respuestas } = req.body;
-    
-            if(!respuestas || !respuestas.length) {
-                res.status(400).json({ error: "Faltan las respuestas en el body." });
-                return;
-            }
 
             await Respuesta.bulkCreate(
                 respuestas.map((r: any) => ({
@@ -185,7 +181,7 @@ export class CheckListController {
                     preguntaId: r.preguntaId,
                     valor: String(r.valor ?? '')
                 })),
-                { updateOnDuplicate: ['valor']}
+                { updateOnDuplicate: ['valor'] }
             );
 
             res.json({ message: 'Progreso guardado correctamente' });
@@ -227,8 +223,7 @@ export class CheckListController {
 
     static finalizarChecklist = async (req: Request, res: Response,) => {
         const checklist = req.checklist;
-        const tieneCaja = req.asignacion.cajaId !== null;
-        const aplica_a = tieneCaja ? ['todos', 'tractocamion'] : ['todos'];
+        const aplica_a = getAplicaAPorCaja(req.asignacion.cajaId);
 
         try {
             const obligatorias = await Pregunta.findAll({
