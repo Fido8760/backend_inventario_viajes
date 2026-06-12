@@ -354,7 +354,7 @@ export class AsignacionController {
                 include: [
                     { model: Unidad, attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas'] },
                     { model: Operador, attributes: ['id', 'nombre', 'apellido_p', 'apellido_m'] },
-                    { model: Caja, attributes: ['id', 'numero_caja', 'c_placas'], required: false },
+                    { model: Caja, attributes: ['id', 'numero_caja', 'c_placas', 'c_marca'], required: false },
                     {
                         model: DatosCheckList,
                         as: 'checklist',
