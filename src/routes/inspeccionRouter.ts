@@ -26,7 +26,7 @@ router.post('/',
 )
 
 router.get('/:inspeccionId',
-    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS, Rol.ADMIN),
     validarInspeccionExistente,
     InspeccionController.getById
 )
