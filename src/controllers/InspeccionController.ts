@@ -87,7 +87,6 @@ export class InspeccionController {
                     { model: UsuariosChecklist, attributes: ['id', 'name', 'lastname'] },
                     { model: ImagenesInspeccion, attributes: ['id', 'fieldId'] },
                 ],
-                subQuery: false,
             });
 
             res.json({ count, rows });
