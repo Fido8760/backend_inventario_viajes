@@ -89,9 +89,9 @@ router.put('/users/:userId',
     body('email')
         .isEmail().withMessage('Email no válido'),
     body('rol')
-        .notEmpty().withMessage('El rol es obligatorio') // Ya que el frontend lo envía
-        .isNumeric().withMessage('El rol debe ser un número')
-        .isIn(['1', '2']).withMessage('Rol no válido. Valores permitidos: 1 (Admin), 2 (Usuario).'),
+        .notEmpty().withMessage('El rol es obligatorio')
+        .isIn(['ADMIN', 'CAPTURISTA', 'SISTEMAS', 'VIGILANTE'])
+            .withMessage('Rol no válido. Valores permitidos: ADMIN, CAPTURISTA, SISTEMAS, VIGILANTE.'),
     handleInputErrors,
     AuthController.updateUser
 )
