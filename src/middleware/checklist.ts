@@ -148,18 +148,16 @@ export const perteneceAAsignacion = async (req: Request, res: Response, next: Ne
 
 export const verificarChecklistEditable = (req: Request, res: Response, next: NextFunction) => {
     const rol = req.authenticatedUser?.rol;
+    const status = req.asignacion.status;
 
-    if(rol === Rol.SISTEMAS) {
-        return next();
-    }
+    if (rol === Rol.SISTEMAS) return next();
 
-    if(req.asignacion.status === AsignacionStatus.COMPLETA ) {
-        res.status(403).json({ error: 'No puedes modificar un checklist de una asignación ya finalizada'});
+    if (status === AsignacionStatus.COMPLETA) {
+        res.status(403).json({ error: 'No puedes modificar un checklist de una asignación ya finalizada' });
         return;
     }
-
-    if(rol === Rol.VIGILANTE) {
-        res.status(403).json({ error: 'El vigilante solo puede actuar sobre unidades en ruta'});
+    if (status === AsignacionStatus.EN_RUTA) {
+        res.status(403).json({ error: 'La unidad está en ruta, solo se puede registrar la entrada' });
         return;
     }
     next();
@@ -168,8 +166,6 @@ export const verificarChecklistEditable = (req: Request, res: Response, next: Ne
 export const verificarChecklistCompleto = (req: Request, res: Response, next: NextFunction) => {
     const rol = req.authenticatedUser?.rol;
 
-    // El vigilante opera sobre asignaciones EN_RUTA, donde el checklist
-    // ya está COMPLETO por definición — no necesita esta validación
     if (rol === Rol.VIGILANTE || rol === Rol.SISTEMAS) return next();
 
     if (req.checklist.status !== ChecklistStatus.COMPLETO) {
@@ -188,5 +184,22 @@ export const verificarAsignacionEnRuta = (req: Request, res: Response, next: Nex
 
     next();
 }
+
+export const verificarPuedeSubirFotos = (req: Request, res: Response, next: NextFunction) => {
+    const rol = req.authenticatedUser?.rol;
+    const status = req.asignacion.status;
+
+    if (rol === Rol.SISTEMAS) return next();
+
+    if (status === AsignacionStatus.COMPLETA) {
+        res.status(403).json({ error: 'La asignación ya está finalizada' });
+        return;
+    }
+    if (rol === Rol.VIGILANTE && status !== AsignacionStatus.EN_RUTA) {
+        res.status(403).json({ error: 'El vigilante solo puede actuar sobre unidades en ruta' });
+        return;
+    }
+    next();
+};
 
 

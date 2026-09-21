@@ -74,6 +74,19 @@ export class CheckListController {
             try {
                 const file = files.file[0]
                 const fieldId = fields.fieldId?.[0] || 'sin_nombre'
+
+                const esFotoEntrada = fieldId.startsWith('entrada_')
+                const enRuta = asignacion.status === AsignacionStatus.EN_RUTA
+
+                 if (enRuta !== esFotoEntrada) {
+                    await fs.unlink(file.filepath).catch(() => {})
+                    res.status(400).json({
+                        error: enRuta
+                            ? 'Con la unidad en ruta solo se pueden subir fotos de entrada'
+                            : 'Las fotos de entrada solo se pueden subir con la unidad en ruta'
+                    })
+                    return
+                }
                 const tempWebpPath = `${file.filepath}_converted.webp`
                 const fecha = new Date().toISOString().split('T')[0];
                 const noUnidad = asignacion.unidad?.no_unidad ?? `unidadId_${asignacion.unidadId}`;

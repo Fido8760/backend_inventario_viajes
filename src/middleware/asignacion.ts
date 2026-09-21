@@ -4,7 +4,6 @@ import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
 import DatosCheckList from "../models/DatosCheckList";
 import Operador from "../models/Operador";
-import { Rol } from "../types/roles";
 import { AsignacionStatus } from "../types/estados-asignacion";
 
 declare global {
@@ -59,7 +58,6 @@ export const validarExitenciaViaje = async (req: Request, res: Response, next: N
         next()
         
     } catch (error) {
-        //console.log(error)
         res.status(500).json({error: 'Hubo un error'})
     }
     
@@ -188,28 +186,11 @@ export const validarParamOpcional = async (req: Request, res: Response, next: Ne
     next()
 }
 
-export const verificarChecklistEditable = (req: Request, res: Response, next: NextFunction) => {
-    const rol = req.authenticatedUser?.rol;
-
-    if (rol === Rol.SISTEMAS) return next();
-
-    // Nadie modifica una asignación ya completa
-    if (req.asignacion.status === AsignacionStatus.COMPLETA) {
-        res.status(403).json({ error: 'No puedes modificar un checklist de una asignación ya finalizada' });
-        return;
-    }
-
-    // VIGILANTE solo puede actuar cuando está EN_RUTA
-    if (rol === Rol.VIGILANTE && req.asignacion.status !== AsignacionStatus.EN_RUTA) {
-        res.status(403).json({ error: 'El vigilante solo puede actuar sobre unidades en ruta' });
-        return;
-    }
-
-    // CAPTURISTA no puede tocar nada en EN_RUTA — esa fase es del vigilante
-    if (rol === Rol.CAPTURISTA && req.asignacion.status === AsignacionStatus.EN_RUTA) {
-        res.status(403).json({ error: 'La unidad está en ruta, solo vigilancia puede registrar la entrada' });
-        return;
-    }
-
-    next();
-};
+export const verificarEstadoAsignacion = (...permitidos: AsignacionStatus[]) =>
+    (req: Request, res: Response, next: NextFunction) => {
+        if (!permitidos.includes(req.asignacion.status)) {
+            res.status(409).json({ error: `Acción no disponible en el estado actual (${req.asignacion.status})` });
+            return;
+        }
+        next();
+    };
