@@ -8,6 +8,8 @@ import InspeccionPatio, { InspeccionStatus, TipoInspeccion } from '../models/Ins
 import Operador from '../models/Operador';
 import Caja from '../models/Caja';
 import { Op } from 'sequelize';
+import Marca from '../models/Marca';
+import { getUnidadesEnRutaConAntiguedad } from '../helpers/getUnidadEnRuta';
 
 export class DashboardController {
 
@@ -69,18 +71,8 @@ export class DashboardController {
 
     static getUnidadesEnRuta = async (req: Request, res: Response) => {
         try {
-            const asignaciones = await Asignacion.findAll({
-                where: { status: AsignacionStatus.EN_RUTA },
-                include: [
-                    { model: Unidad, attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas'] },
-                    { model: Operador, attributes: ['id', 'nombre', 'apellido_p', 'apellido_m'] },
-                    { model: Caja, attributes: ['id', 'numero_caja', 'c_placas', 'c_marca'] },
-                ],
-                order: [['updatedAt', 'DESC']]
-            });
-
-            res.json({ total: asignaciones.length, asignaciones });
-
+            const asignaciones = await getUnidadesEnRutaConAntiguedad();
+            res.json({ total: asignaciones.length, asignaciones})
         } catch (error) {
             console.error('[DashboardController.getUnidadesEnRuta]', error);
             res.status(500).json({ error: 'Error al obtener unidades en ruta' });
@@ -378,4 +370,75 @@ export class DashboardController {
         }
     }
 
+    static getHistorialUnidad = async (req: Request, res: Response) => {
+        try {
+            const { unidadId } = req.params;
+
+            const asignaciones = await Asignacion.findAll({
+                where: { unidadId },
+                include: [
+                    { 
+                        model: Operador, 
+                        attributes: ['id', 'nombre', 'apellido_p', 'apellido_m'] 
+                    },
+                    {
+                        model: Unidad,
+                        attributes: ['id', 'no_unidad', 'u_placas', 'u_marca'],
+                        include: [{ model: Marca, attributes: ['id', 'nombre']}]
+                    },
+                    { 
+                        model: Caja, 
+                        attributes: ['id', 'numero_caja', 'c_placas', 'c_marca' ],
+                        include: [{ model: Marca, attributes: ['id', 'nombre']}]
+                    },
+                    {
+                        model: DatosCheckList,
+                        as: 'checklist',
+                        include: [{ model: ImagenesChecklist }]
+                    }
+                ],
+                order: [['createdAt', 'ASC']]
+            })
+
+            res.json({ total: asignaciones.length, asignaciones })
+        } catch (error) {
+            console.error('[DashboardController.getHistorialUnidad]', error)
+            res.status(500).json({ error: 'Error al obtener el historial de la unidad' })
+        }
+    }
+
+    static getHistorialOperador = async (req: Request, res: Response) => {
+        try {
+            const { operadorId } = req.params
+
+            const asignaciones = await Asignacion.findAll({
+                where: { operadorId },
+                include: [
+                    { 
+                        model: Unidad, 
+                        attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas', 'u_marca'],
+                        include: [{ model: Marca, attributes: ['id', 'nombre']}]
+                    },
+                    { 
+                        model: Caja, 
+                        attributes: ['id', 'numero_caja', 'c_placas', 'c_marca'],
+                        include: [{ model: Marca, attributes: ['id', 'nombre']}]
+                    },
+                    {
+                        model: DatosCheckList,
+                        as: 'checklist',
+                        include: [{ model: ImagenesChecklist }]
+                    }
+                ],
+                order: [['createdAt', 'ASC']]
+            })
+
+            res.json({ total: asignaciones.length, asignaciones })
+        } catch (error) {
+            console.error('[DashboardController.getHistorialUnidad]', error)
+            res.status(500).json({ error: 'Error al obtener el historial de la unidad' })
+        }
+    }
+
 }
+

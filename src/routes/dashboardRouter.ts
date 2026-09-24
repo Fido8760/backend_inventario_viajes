@@ -11,6 +11,9 @@ router.get('/kpis/criticas', DashboardController.getUnidadesCriticas);
 router.get('/kpis/sin-fotografias', DashboardController.getSinFotografias);
 router.get('/kpis/inspecciones', DashboardController.getKpisInspecciones);
 router.get('/kpis/en-ruta', DashboardController.getUnidadesEnRuta);
+/** Historial de Operadores y Unidades */
+router.get('/unidades/:unidadId/historial', DashboardController.getHistorialUnidad)
+router.get('/operadores/:operadorId/historial', DashboardController.getHistorialOperador)
 
 
 export default router

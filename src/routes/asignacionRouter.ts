@@ -21,6 +21,10 @@ router.get('/en-ruta',
     authorizeRoles(Rol.VIGILANTE, Rol.SISTEMAS, Rol.CAPTURISTA),
     AsignacionController.getEnRuta
 )
+router.get('/contexto-unidad',
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
+    AsignacionController.getContextoUnidad
+)
 
 router.param('asignacionId', validarAsignacionId)
 router.param('asignacionId', validarExitenciaViaje)

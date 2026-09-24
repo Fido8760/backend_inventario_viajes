@@ -1,23 +1,11 @@
-import {
-    Table,
-    Model,
-    Column,
-    DataType,
-    HasMany,
-    HasOne
-} from "sequelize-typescript";
-
-import {
-    InferAttributes,
-    InferCreationAttributes,
-    CreationOptional
-} from "sequelize";
-
+import { Table, Model, Column, DataType, HasMany, HasOne, ForeignKey, BelongsTo } from "sequelize-typescript";
+import { InferAttributes, InferCreationAttributes, CreationOptional } from "sequelize";
 import Asignacion from "./Asignacion";
 import Poliza from "./Poliza";
 import TarjetaCirculacion from "./TarjetaCirculacion";
 import VeriAmbiental from "./VeriAmbiental";
 import VeriFisico from "./VeriFisico";
+import Marca from "./Marca";
 
 @Table({
     tableName: 'unidades',
@@ -103,6 +91,18 @@ class Unidad extends Model<
 
     @HasOne(() => VeriFisico)
     declare veriFisico: VeriFisico
+
+
+    @ForeignKey(() => Marca)
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: true,
+        field: 'marca_id'
+    })
+    declare marcaId: number | null
+
+    @BelongsTo(() => Marca)
+    declare marca: Marca
 }
 
 export default Unidad

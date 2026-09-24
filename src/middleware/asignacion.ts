@@ -83,19 +83,28 @@ export const validarasignacionInput = async (req: Request, res: Response, next: 
                 .notEmpty().withMessage('El numero de unidad es obligatorio')
                 .isNumeric().withMessage('Seleccion no válida')
                 .custom(value => value > 0).withMessage('Selección no válida')
-                .run(req)
+                .run(req);
+
         await body('operadorId')
                 .notEmpty().withMessage('El operador es obligatorio')
                 .isNumeric().withMessage('Seleccion no válida')
                 .custom(value => value > 0).withMessage('Selección no válida')
-                .run(req)
+                .run(req);
+
+        await body('entregaInicial')
+                .optional()
+                .isBoolean().withMessage('Valor no válido')
+                .run(req);
+
         const initialErrors = validationResult(req)
         if(!initialErrors.isEmpty()) {
             res.status(400).json({ errors: initialErrors.array() })
             return 
         }
-        const unidadId = req.body.unidadId
-        const unidad = await Unidad.findByPk(unidadId)
+
+        const unidadId = req.body.unidadId;
+        const unidad = await Unidad.findByPk(unidadId);
+        
         if(!unidad) {
             res.status(404).json({ errors: [{ msg: `Unidad con ID ${unidadId} no encontrada` }] })
             return

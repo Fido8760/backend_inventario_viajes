@@ -1,18 +1,7 @@
-import {
-    Table,
-    Model,
-    Column,
-    DataType,
-    HasMany
-} from "sequelize-typescript";
-
-import {
-    InferAttributes,
-    InferCreationAttributes,
-    CreationOptional
-} from "sequelize";
-
+import { Table, Model, Column, DataType, HasMany, ForeignKey, BelongsTo } from "sequelize-typescript";
+import { InferAttributes, InferCreationAttributes, CreationOptional } from "sequelize";
 import Asignacion from "./Asignacion";
+import Marca from "./Marca";
 
 @Table({
     tableName: 'cajas',
@@ -74,6 +63,17 @@ class Caja extends Model<
         onDelete: 'CASCADE'
     })
     declare asignaciones: Asignacion[]
+
+    @ForeignKey(() => Marca)
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: true,
+        field: 'marca_id'
+    })
+    declare marcaId: number | null
+
+    @BelongsTo(() => Marca)
+    declare marca: Marca
 
 }
 

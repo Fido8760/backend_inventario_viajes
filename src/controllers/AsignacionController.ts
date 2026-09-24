@@ -14,17 +14,19 @@ import { endOfDay, isValid, parseISO, startOfDay } from "date-fns"
 import Respuesta from "../models/RespuestasChecklist"
 import Pregunta from "../models/PreguntasChecklist"
 import { AsignacionStatus } from "../types/estados-asignacion"
+import Marca from "../models/Marca"
+import { getUnidadesEnRutaConAntiguedad } from "../helpers/getUnidadEnRuta"
 
 export class AsignacionController {
 
     static getAll = async (req: Request, res: Response) => {
 
-        const {skip, take} = req.pagination
-        const { asignacionDate, search } = req.query
-        const where: any = {}
+        const {skip, take} = req.pagination;
+        const { asignacionDate, search } = req.query;
+        const where: any = {};
 
         if (asignacionDate) {
-            const date = parseISO(asignacionDate as string)
+            const date = parseISO(asignacionDate as string);
             if(!isValid(date)) {
                 res.status(500).json({error: 'Fecha no válida'})
                 return
@@ -35,6 +37,10 @@ export class AsignacionController {
             where.createdAt = {
                 [Op.between]: [start, end]
             };
+        } else if (!search) {
+            const fechaLimite = new Date();
+            fechaLimite.setDate(fechaLimite.getDate() - 60);
+            where.createdAt = { [Op.gte]: fechaLimite };
         }
 
         if (search && typeof search === 'string') {
@@ -86,6 +92,7 @@ export class AsignacionController {
         try {
             const asignacionesUnidades = await Unidad.findAll({
                 where: { activo: 1 },
+                include: [{ model:Marca, attributes: ['id', 'nombre'] }],
                 order: [
                     ['no_unidad', 'ASC']
                 ]
@@ -101,6 +108,7 @@ export class AsignacionController {
         try {
             const asignacionesCajas = await Caja.findAll({
                 where: { activo: 1 },
+                include: [{ model: Marca, attributes: ['id', 'nombre'] }],
                 order: [
                     ['numero_caja', 'ASC']
                 ]
@@ -127,6 +135,51 @@ export class AsignacionController {
         }
     }
 
+    static getContextoUnidad = async (req: Request, res: Response) => {
+        try {
+            const unidadId = Number(req.query.unidadId);
+            const operadorId = Number(req.query.operadorId);
+            const cajaId = req.query.cajaId ? Number(req.query.cajaId) : null;
+
+            if (!unidadId || !operadorId) {
+                res.status(400).json({ error: 'unidadId y operad  son requeridos' })
+                return;
+            }
+
+            const ultimaGeneral = await Asignacion.findOne({
+                where: { unidadId },
+                order: [['createdAt', 'DESC']],
+                include: [{ model: Operador, attributes: ['id', 'nombre', 'apellido_p'] }]
+            });
+
+            const sugerirEntregaInicial = !ultimaGeneral || ultimaGeneral.operadorId !== operadorId;
+
+            let cambioDeRemolque = false;
+            let cajaAnteriorDeEsteOperador: number | null = null;
+
+            if (!sugerirEntregaInicial && cajaId !== null) {
+                const ultimaConEsteOperador = await Asignacion.findOne({
+                    where: { unidadId, operadorId },
+                    order: [['createdAt', 'DESC']]
+                });
+                cajaAnteriorDeEsteOperador = ultimaConEsteOperador?.cajaId ?? null;
+                cambioDeRemolque = cajaAnteriorDeEsteOperador !== cajaId;
+            }
+
+            res.json({
+                tieneHistorial: !!ultimaGeneral,
+                sugerirEntregaInicial,
+                operadorAnterior: sugerirEntregaInicial && ultimaGeneral
+                    ? { id: ultimaGeneral.operador.id, nombre: `${ultimaGeneral.operador.nombre} ${ultimaGeneral.operador.apellido_p}` } : null,
+                cambioDeRemolque,
+                cajaAnteriorDeEsteOperador
+            });
+        } catch (error) {
+            console.error('Error en getContextoUnidad:', error);
+            res.status(500).json({ error: 'Hubo un error' });
+        }
+    }
+
     static create = async (req: Request, res: Response) => {
         try {
             const asignacion = new Asignacion(req.body)
@@ -145,8 +198,16 @@ export class AsignacionController {
         const asignacion = await Asignacion.findByPk(req.asignacion.id, {
             include: [
                 { model: UsuariosChecklist, attributes: { exclude: ['createdAt', 'updatedAt', 'password', 'token'] } },
-                { model: Unidad, attributes: { exclude: ['createdAt', 'updatedAt'] } },
-                { model: Caja, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+                {
+                    model: Unidad,
+                    attributes: { exclude: ['createdAt', 'updatedAt'] },
+                    include: [{ model: Marca, attributes: ['id', 'nombre'] }]
+                },
+                {
+                    model: Caja,
+                    attributes: { exclude: ['createdAt', 'updatedAt'] },
+                    include: [{ model: Marca, attributes: ['id', 'nombre'] }]
+                },
                 { model: Operador, attributes: { exclude: ['createdAt', 'updatedAt'] } },
                 {   
                     model: DatosCheckList,
@@ -280,7 +341,6 @@ export class AsignacionController {
                 return
             }
 
-            console.log(`[LOGIC][limpiarChecklistTracto] Checklist ${checklist.id} encontrado. Procesando respuestas...`);
             let respuestas: RespuestaChecklist = JSON.parse(JSON.stringify(checklist.checklistJson)); 
             let cambiosRealizados = false;
 
@@ -349,21 +409,8 @@ export class AsignacionController {
 
     static getEnRuta = async (req: Request, res: Response) => {
         try {
-            const asignaciones = await Asignacion.findAll({
-                where: { status: AsignacionStatus.EN_RUTA },
-                include: [
-                    { model: Unidad, attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas'] },
-                    { model: Operador, attributes: ['id', 'nombre', 'apellido_p', 'apellido_m'] },
-                    { model: Caja, attributes: ['id', 'numero_caja', 'c_placas', 'c_marca'], required: false },
-                    {
-                        model: DatosCheckList,
-                        as: 'checklist',
-                        include: [{ model: ImagenesChecklist }]
-                    }
-                ],
-                order: [['createdAt', 'DESC']]
-            });
-            res.json({ total: asignaciones.length, asignaciones })
+           const asignaciones = await getUnidadesEnRutaConAntiguedad();
+           res.json({ total: asignaciones.length, asignaciones})
         } catch (error) {
             console.log('Error en getEnRuta:', error);
             res.status(500).json({ error: 'Error al obtener las unidades en ruta' });

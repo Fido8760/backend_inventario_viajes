@@ -21,7 +21,8 @@ class Asignacion extends Model<
         type: DataType.INTEGER,
         allowNull: true
     })
-    declare unidadId: number | null 
+    declare unidadId: number | null;
+
     @BelongsTo(() => Unidad, { onDelete: "SET NULL", hooks: true })
     declare unidad: Unidad
     
@@ -30,15 +31,23 @@ class Asignacion extends Model<
         type: DataType.INTEGER,
         allowNull: true
     })
-    declare cajaId: number | null
+    declare cajaId: number | null;
+
     @BelongsTo(() => Caja, { onDelete: "SET NULL", hooks: true })
-    declare caja: Caja
+    declare caja: Caja;
 
     @Default(AsignacionStatus.CREADA)
     @Column({
         type: DataType.ENUM(...Object.values(AsignacionStatus))
     })
-    declare status: AsignacionStatus
+    declare status: AsignacionStatus;
+
+    @Default(false)
+    @Column({
+        type: DataType.BOOLEAN,
+        allowNull: false
+    })
+    declare entregaInicial: boolean;
 
     @Column({
         type: DataType.TEXT,
@@ -51,7 +60,8 @@ class Asignacion extends Model<
         type: DataType.INTEGER,
         allowNull: false
     })
-    declare operadorId: number
+    declare operadorId: number;
+
     @BelongsTo(() => Operador, { onDelete: "RESTRICT", hooks: true })
     declare operador: Operador
 
