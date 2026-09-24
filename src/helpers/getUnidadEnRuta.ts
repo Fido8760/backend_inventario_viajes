@@ -13,12 +13,12 @@ export async function getUnidadesEnRutaConAntiguedad() {
         include: [
             {
                 model: Unidad,
-                attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas'],
+                attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas', 'u_marca'],
                 include: [{ model: Marca, attributes: ['id', 'nombre'] }]
             },
             {
                 model: Caja,
-                attributes: ['id', 'numero_caja', 'c_placas'],
+                attributes: ['id', 'numero_caja', 'c_placas', 'c_marca'],
                 include: [{ model: Marca, attributes: ['id', 'nombre'] }]
             },
             { 
