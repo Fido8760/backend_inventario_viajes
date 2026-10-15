@@ -134,6 +134,7 @@ export class AsignacionController {
 
             res.json(unidades);
         } catch (error) {
+            console.error('Error en getUnidades:', error);
             res.status(500).json({ error: 'Hubo un error al obtener unidades' });
         }
     };
