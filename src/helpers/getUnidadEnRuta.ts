@@ -4,13 +4,20 @@ import DatosCheckList from "../models/DatosCheckList";
 import ImagenesChecklist from "../models/ImagenesChecklist";
 import Marca from "../models/Marca";
 import Operador from "../models/Operador";
+import Recorrido from "../models/Recorrido";
 import Unidad from "../models/Unidad";
-import { AsignacionStatus } from "../types/estados-asignacion";
+import { RecorridoStatus } from "../types/estados-asignacion";
 
-export async function getUnidadesEnRutaConAntiguedad() {
-    const asignaciones = await Asignacion.findAll({
-        where: { status: AsignacionStatus.EN_RUTA },
+export async function getRecorridosEnRutaConAntiguedad() {
+    const recorridos = await Recorrido.findAll({
+        where: { status: RecorridoStatus.EN_RUTA },
         include: [
+            {
+                model: Asignacion,
+                attributes: ['id'],
+                required: true,
+                where: { fechaDevolucion: null }
+            },
             {
                 model: Unidad,
                 attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas', 'u_marca'],
@@ -35,8 +42,12 @@ export async function getUnidadesEnRutaConAntiguedad() {
     });
 
     const ahora = Date.now();
-    return asignaciones.map(a => ({
-        ...a.toJSON(),
-        diasEnRuta: Math.floor((ahora - a.createdAt.getTime()) / (1000 * 60 * 60 *24))
-    }));
+    return recorridos.map(r => {
+        const { id, asignacion, ...resto } = r.toJSON() as any;
+        return {
+            recorridoId: id,
+            ...resto,
+            diasEnRuta: Math.floor((ahora - r.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+        };
+    });
 }

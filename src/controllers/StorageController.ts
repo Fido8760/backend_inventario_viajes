@@ -6,18 +6,22 @@ import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
 import ImagenesChecklist from "../models/ImagenesChecklist";
 import cloudinary from "../config/cloudinary";
+import Recorrido from "../models/Recorrido";
 
 export class StorageController {
     static getChecklists = async (req: Request, res: Response) => {
         try {
-            const antiguedad = parseInt(req.query.atiguedad as string) || 1;
-            const fechaLimite = subYears(new Date(), antiguedad);
+            const dias = req.query.dias ? parseInt(req.query.dias as string) : null;
+            const antiguedad = req.query.antiguedad !== undefined  ? parseInt(req.query.antiguedad as string, 10) : 1;
+
+            const fechaLimite = antiguedad === 0 ? new Date() : subYears(new Date(), antiguedad);
 
             const checklists = await DatosCheckList.findAll({
-                where: { createdAt: { [Op.lte]: fechaLimite} },
+                where: { createdAt: { [Op.lte]: fechaLimite } },
                 include: [
                     {
-                        model: Asignacion,
+                        model: Recorrido,
+                        as: 'recorrido',
                         include: [{ model: Unidad, attributes: ['no_unidad', 'u_placas', 'tipo_unidad'] }]
                     },
                     {
@@ -29,14 +33,14 @@ export class StorageController {
             });
 
             const result = checklists.map(c => ({
-                checklistId:  c.id,
-                fecha:        c.createdAt,
-                unidad:       c.asignacion?.unidad?.no_unidad ?? '—',
-                placas:       c.asignacion?.unidad?.u_placas  ?? '—',
-                tipo:         c.asignacion?.unidad?.tipo_unidad ?? '—',
-                totalFotos:   c.imagenes?.length ?? 0,
-                tieneFotos:   (c.imagenes?.length ?? 0) > 0 && c.imagenes.some(img => img.publicId !== null), 
-            }))
+                checklistId: c.id,
+                fecha:       c.createdAt,
+                unidad:      c.recorrido?.unidad?.no_unidad ?? '—',
+                placas:      c.recorrido?.unidad?.u_placas  ?? '—',
+                tipo:        c.recorrido?.unidad?.tipo_unidad ?? '—',
+                totalFotos:  c.imagenes?.length ?? 0,
+                tieneFotos:  (c.imagenes?.length ?? 0) > 0 && c.imagenes.some(img => img.publicId !== null),
+            }));
 
             res.json({ data: result, total: result.length });
 
@@ -62,19 +66,28 @@ export class StorageController {
                 return;
             }
 
-            await Promise.all(
-                imagenes.map(img => cloudinary.uploader.destroy(img.publicId))
-            )
+            const publicIds = imagenes.map(img => img.publicId).filter((id): id is string => Boolean(id));
+
+            if (publicIds.length > 0) {
+                try {
+                    await cloudinary.api.delete_resources(publicIds);
+                } catch (cloudErr) {
+                    console.error('Aviso al limpiar Cloudinary:', cloudErr);
+                }
+            }
 
             await ImagenesChecklist.update(
-                { urlImagen: null, publicId: null },
+                {
+                    urlImagen: 'ARCHIVADA',
+                    publicId: null
+                },
                 { where: { checklistId } }
-            )
+            );
 
-            res.json({
-                message: `${imagenes.length} fotos eliminadas correctamente`,
+             res.json({
+                message: `${imagenes.length} fotos eliminadas de la nube exitosamente`,
                 checklistId
-            })
+            });
             
         } catch (error) {
             console.error('Error en getChecklist', error);

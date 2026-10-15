@@ -1,19 +1,16 @@
 import type { Request, Response, NextFunction } from "express";
-import { body, param, query, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
-import DatosCheckList from "../models/DatosCheckList";
 import Operador from "../models/Operador";
-import { AsignacionStatus } from "../types/estados-asignacion";
+import Caja from "../models/Caja";
+import Marca from "../models/Marca";
 
 declare global {
     namespace Express {
         interface Request {
-            asignacion?: Asignacion,
-            pagination?: {
-                take: number,
-                skip: number
-            }
+            asignacion?: Asignacion;
+            pagination?: { skip: number; take: number };
         }
     }
 }
@@ -24,182 +21,123 @@ export const validarAsignacionId = async (req: Request, res: Response, next: Nex
             .custom(value => value > 0).withMessage('ID no válido').run(req)
 
     let errors = validationResult(req)
-        if(!errors.isEmpty()){
-            res.status(400).json({ errors: errors.array() })
-            return
-        }
-    next()
-}
-
-export const validarExitenciaViaje = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { asignacionId } = req.params;
-        
-        console.log('asignacionId:', asignacionId);
-        const asignacion = await Asignacion.findByPk(asignacionId, {
-            include: [
-                {
-                    model: Unidad,
-                    attributes: ['id', 'tipo_unidad', 'no_unidad']
-
-                },
-                {
-                    model: DatosCheckList,
-                    as:  'checklist'
-                }
-            ]
-        })
-        if(!asignacion) {
-            const error = new Error('Viaje Asignado no encontrado')
-            res.status(404).json({error: error.message})
-            return
-        }
-        req.asignacion = asignacion   
-        next()
-        
-    } catch (error) {
-        res.status(500).json({error: 'Hubo un error'})
-    }
-    
-    
-}
-
-
-export const prevenirCreacionChecklistDuplicado = (req: Request, res: Response, next: NextFunction) => {
-
-    if (req.asignacion && req.asignacion.checklist) {
-        const error = new Error('La asignación ya tiene un checklist asociado')
-        res.status(409).json({error: error.message})
-        return
-    }
-
-    next();
-};
-
-export const validarasignacionInput = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        
-        await body('unidadId')
-                .notEmpty().withMessage('El numero de unidad es obligatorio')
-                .isNumeric().withMessage('Seleccion no válida')
-                .custom(value => value > 0).withMessage('Selección no válida')
-                .run(req);
-
-        await body('operadorId')
-                .notEmpty().withMessage('El operador es obligatorio')
-                .isNumeric().withMessage('Seleccion no válida')
-                .custom(value => value > 0).withMessage('Selección no válida')
-                .run(req);
-
-        await body('entregaInicial')
-                .optional()
-                .isBoolean().withMessage('Valor no válido')
-                .run(req);
-
-        const initialErrors = validationResult(req)
-        if(!initialErrors.isEmpty()) {
-            res.status(400).json({ errors: initialErrors.array() })
-            return 
-        }
-
-        const unidadId = req.body.unidadId;
-        const unidad = await Unidad.findByPk(unidadId);
-        
-        if(!unidad) {
-            res.status(404).json({ errors: [{ msg: `Unidad con ID ${unidadId} no encontrada` }] })
-            return
-        }
-
-        const operadorId = req.body.operadorId
-        const operador = await Operador.findByPk(operadorId)
-        if(!operador) {
-            res.status(404).json({ errors: [{ msg: `Operador con ID ${operadorId} no encontrado` }] })
-            return
-        }
-        
-        if(unidad.tipo_unidad === 'TRACTOCAMION') {
-            const cajaExterna = req.body.caja_externa === true || req.body.caja_externa === 'true'
- 
-            if (!cajaExterna) {
-                // Solo exige cajaId si la caja NO es externa
-                await body('cajaId')
-                    .notEmpty().withMessage('La placa del remolque es obligatorio para tractocamiones')
-                    .isNumeric().withMessage('Selección no válida para remolque')
-                    .custom(value => Number(value) > 0).withMessage('Selección no válida para remolque')
-                    .run(req)
-            } else {
-                // caja_externa = true: cajaId puede ser null
-                req.body.cajaId = null
-            }
-        } else {
-            
-            await body('cajaId')
-                .custom((value, { req }) => {
-                    if (!value || Number(value) === 0) {
-                        return true
-                    }
-                    throw new Error(`No se puede asignar remolque a este tipo de unidad (${unidad.tipo_unidad})`);
-                })
-
-                .customSanitizer(value => {
-                    if (!value || Number(value) === 0) {
-                        return null
-                    }
-                    return value;
-                })
-                .run(req);
-        }
-        next()
-    } catch (error) {
-        console.error("Error en middleware validarasignacionInput:", error);
-    }
-
-}
-
-export const validarParamOpcional = async (req: Request, res: Response, next: NextFunction) => {
-    await query('asignacionDate')
-            .optional()
-            .isISO8601()
-            .withMessage('La fecha debe tener formato válido YYYY-MM-DD')
-            .run(req);
-
-    await query('take')
-            .optional()
-            .isInt({min: 1})
-            .withMessage('Page deber ser mayor a 0')
-            .run(req)
-
-    await query('skip')
-            .optional()
-            .isInt().withMessage('Skip debe un unumero entero')
-            .custom(value => value >= 0).withMessage('ID no válido')
-            .run(req)
-            
-    await query('search')
-            .optional()
-            .isString()
-            .withMessage('Deber ser texto la búsqueda')
-            .run(req)
-
-    let errors = validationResult(req)
     if(!errors.isEmpty()){
         res.status(400).json({ errors: errors.array() })
         return
     }
-
-    // Parsear y asignar el valor de 'take' con un valor por defecto
-    const take = req.query.take ? parseInt(req.query.take as string ) : 5;
-    const skip = req.query.skip ? parseInt(req.query.skip as string ) : 0;
-    req.pagination = {take, skip}
-
     next()
 }
 
-export const verificarEstadoAsignacion = (...permitidos: AsignacionStatus[]) =>
-    (req: Request, res: Response, next: NextFunction) => {
-        if (!permitidos.includes(req.asignacion.status)) {
-            res.status(409).json({ error: `Acción no disponible en el estado actual (${req.asignacion.status})` });
+export const validarExistenciaAsignacion = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { asignacionId } = req.params;
+
+         const asignacion = await Asignacion.findByPk(asignacionId, {
+            include: [
+                { 
+                    model: Unidad, 
+                    attributes: ['id', 'no_unidad', 'tipo_unidad', 'u_placas', 'activo'],
+                    include: [{ model: Marca, attributes: ['id', 'nombre'] }] 
+                },
+                { 
+                    model: Operador, 
+                    attributes: ['id', 'nombre', 'apellido_p', 'apellido_m', 'activo']
+                },
+                { 
+                    model: Caja, 
+                    attributes: ['id', 'numero_caja', 'c_placas', 'activo'],
+                    include: [{ model: Marca, attributes: ['id', 'nombre'] }] 
+                }
+            ]
+        });
+        if(!asignacion) {
+            res.status(404).json({ error: 'Asignación no encontrada' })
+            return
+        }
+        req.asignacion = asignacion   
+        next()
+    } catch (error) {
+        res.status(500).json({ error: 'Hubo un error' })
+    }
+}
+
+export const validarAsignacionInput = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await body('unidadId')
+            .notEmpty().withMessage('El número de unidad es obligatorio').bail()
+            .isNumeric().withMessage('Debe ser un valor numérico').bail()
+            .custom(value => Number(value) > 0).withMessage('Selección no válida')
+            .run(req);
+
+        await body('operadorId')
+            .notEmpty().withMessage('El operador es obligatorio').bail()
+            .isNumeric().withMessage('Debe ser un valor numérico').bail()
+            .custom(value => Number(value) > 0).withMessage('Selección no válida')
+            .run(req);
+
+        const initialErrors = validationResult(req);
+        if (!initialErrors.isEmpty()) {
+            res.status(400).json({ errors: initialErrors.array() });
             return;
         }
+
+        // 1. Validar Unidad existe y está ACTIVA
+        const unidad = await Unidad.findOne({ where: { id: req.body.unidadId, activo: 1 } });
+        if (!unidad) {
+            res.status(404).json({ errors: [{ msg: `La unidad con ID ${req.body.unidadId} no existe o está dada de baja` }] });
+            return;
+        }
+
+        // 2. Validar Operador existe y está ACTIVO
+        const operador = await Operador.findOne({ where: { id: req.body.operadorId, activo: 1 } });
+        if (!operador) {
+            res.status(404).json({ errors: [{ msg: `El operador con ID ${req.body.operadorId} no existe o está dado de baja` }] });
+            return;
+        }
+
+        // 3. Regla según Tipo de Unidad
+        if (unidad.tipo_unidad === 'TRACTOCAMION') {
+            await body('cajaId')
+                .notEmpty().withMessage('El remolque es obligatorio para tractocamiones').bail()
+                .isNumeric().withMessage('Selección no válida para remolque').bail()
+                .custom(value => Number(value) > 0).withMessage('Selección no válida para remolque')
+                .run(req);
+
+            const cajaErrors = validationResult(req);
+            if (!cajaErrors.isEmpty()) {
+                res.status(400).json({ errors: cajaErrors.array() });
+                return;
+            }
+
+            // Validar que la CAJA existe y esté ACTIVA
+            const caja = await Caja.findOne({ where: { id: req.body.cajaId, activo: 1 } });
+            if (!caja) {
+                res.status(404).json({ errors: [{ msg: `El remolque con ID ${req.body.cajaId} no existe o está dado de baja` }] });
+                return;
+            }
+
+        } else {
+            // Mudancero, Camioneta, etc. NO PUEDEN llevar remolque
+            if (req.body.cajaId && Number(req.body.cajaId) > 0) {
+                res.status(400).json({ 
+                    errors: [{ msg: `No se puede asignar remolque a este tipo de unidad (${unidad.tipo_unidad})` }] 
+                });
+                return;
+            }
+            req.body.cajaId = null; // Sanitizamos a null por seguridad
+        }
+
         next();
-    };
+    } catch (error) {
+        console.error("Error en middleware validarAsignacionInput:", error);
+        res.status(500).json({ error: 'Hubo un error al validar la asignación' });
+    }
+};
+
+export const verificarAsignacionVigente = (req: Request, res: Response, next: NextFunction) => {
+    if (req.asignacion.fechaDevolucion) {
+        res.status(409).json({ error: 'Esta asignación ya fue devuelta' })
+        return
+    }
+    next()
+}

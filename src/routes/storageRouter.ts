@@ -7,9 +7,9 @@ import { StorageController } from "../controllers/StorageController";
 const router = Router();
 
 router.use(authenticate);
-router.use(authorizeRoles(Rol.SISTEMAS));
+router.use(authorizeRoles(Rol.SISTEMAS)); // Correcto: solo Sistemas
 
 router.get('/checklists', StorageController.getChecklists);
-router.delete('/checklists', StorageController.limpiarFotos);
+router.delete('/checklists/:checklistId/fotos', StorageController.limpiarFotos);
 
 export default router;

@@ -1,9 +1,9 @@
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType, HasMany, Default } from 'sequelize-typescript';
-import Asignacion from './Asignacion';
 import { QuestionType } from '../types';
 import ImagenesChecklist from './ImagenesChecklist';
 import { InferAttributes, InferCreationAttributes } from 'sequelize';
 import Respuesta from './RespuestasChecklist';
+import Recorrido from './Recorrido';
 
 export enum ChecklistStatus {
     EN_PROGRESO = 'EN_PROGRESO',
@@ -35,16 +35,16 @@ class DatosCheckList extends Model <
     InferAttributes<DatosCheckList>,
     InferCreationAttributes<DatosCheckList>
 > {
-    @ForeignKey(() => Asignacion)
+    @ForeignKey(() => Recorrido)
     @Column({ 
         type: DataType.INTEGER, 
         allowNull: false,
         unique: true 
     })
-    declare asignacionId: number
+    declare recorridoId: number
 
-    @BelongsTo(() => Asignacion)
-    declare asignacion: Asignacion;
+    @BelongsTo(() => Recorrido)
+    declare recorrido: Recorrido;
 
     @Default(ChecklistStatus.EN_PROGRESO)
     @Column({
@@ -72,4 +72,3 @@ class DatosCheckList extends Model <
 }
 
 export default DatosCheckList;
-

@@ -6,7 +6,7 @@ import cloudinary from '../config/cloudinary'
 import ImagenesChecklist from "../models/ImagenesChecklist"
 import sharp from "sharp"
 import fs from 'fs/promises'
-import { AsignacionStatus } from "../types/estados-asignacion"
+import { RecorridoStatus } from "../types/estados-asignacion"
 import Respuesta from "../models/RespuestasChecklist"
 import Pregunta from "../models/PreguntasChecklist"
 import { getAplicaAPorCaja } from "../helpers/getAplicaA"
@@ -16,7 +16,7 @@ export class CheckListController {
     static getTemplate = async(req: Request, res: Response) => {
         try {
 
-            const aplica_a = getAplicaAPorCaja(req.asignacion.cajaId)
+            const aplica_a = getAplicaAPorCaja(req.recorrido.cajaId)
 
             const preguntas = await Pregunta.findAll({
                 where: { aplica_a },
@@ -38,11 +38,11 @@ export class CheckListController {
     static create = async (req: Request, res: Response) => {
         try {
             const nuevoChecklist = await DatosCheckList.create({
-                asignacionId: req.asignacion.id,
+                recorridoId: req.recorrido.id,
                 status: ChecklistStatus.EN_PROGRESO
             });
 
-            await req.asignacion.update({ status: AsignacionStatus.CHECKLIST_PENDIENTE });
+            await req.recorrido.update({ status: RecorridoStatus.CHECKLIST_PENDIENTE });
 
             res.status(201).json({
                 message: 'Checklist Iniciado',
@@ -58,7 +58,7 @@ export class CheckListController {
     static uploadImage = async (req: Request, res: Response) => {
         const form = formidable({multiples: false});
         const checklistId = +req.params.checklistId;
-        const asignacion = req.asignacion;
+        const recorrido = req.recorrido;
 
         form.parse(req, async(error, fields, files) => {
             if(error) {
@@ -76,7 +76,7 @@ export class CheckListController {
                 const fieldId = fields.fieldId?.[0] || 'sin_nombre'
 
                 const esFotoEntrada = fieldId.startsWith('entrada_')
-                const enRuta = asignacion.status === AsignacionStatus.EN_RUTA
+                const enRuta = recorrido.status === RecorridoStatus.EN_RUTA
 
                  if (enRuta !== esFotoEntrada) {
                     await fs.unlink(file.filepath).catch(() => {})
@@ -89,7 +89,7 @@ export class CheckListController {
                 }
                 const tempWebpPath = `${file.filepath}_converted.webp`
                 const fecha = new Date().toISOString().split('T')[0];
-                const noUnidad = asignacion.unidad?.no_unidad ?? `unidadId_${asignacion.unidadId}`;
+                const noUnidad = recorrido.unidad?.no_unidad ?? `unidadId_${recorrido.unidadId}`;
 
                 const imagenExistente = await ImagenesChecklist.findOne({
                     where: { checklistId, fieldId }
@@ -221,12 +221,12 @@ export class CheckListController {
             )
 
             // 2. Regresar la asignación a CREADA
-            await req.asignacion.update({ status: AsignacionStatus.CREADA })
+            await req.recorrido.update({ status: RecorridoStatus.CREADA })
 
             // 3. Eliminar checklist (CASCADE elimina imágenes e BD automáticamente)
             await checklist.destroy()
 
-            res.json({ message: 'Checklist eliminado, asignación regresada a CREADA' })
+            res.json({ message: 'Checklist eliminado, recorrido regresada a CREADA' })
 
         } catch (error) {
             console.error('Error al eliminar checklist:', error)
@@ -236,7 +236,7 @@ export class CheckListController {
 
     static finalizarChecklist = async (req: Request, res: Response,) => {
         const checklist = req.checklist;
-        const aplica_a = getAplicaAPorCaja(req.asignacion.cajaId);
+        const aplica_a = getAplicaAPorCaja(req.recorrido.cajaId);
 
         try {
             const obligatorias = await Pregunta.findAll({
@@ -263,7 +263,7 @@ export class CheckListController {
             }
 
             await checklist.update({ status: ChecklistStatus.COMPLETO });
-            await req.asignacion.update({ status: AsignacionStatus.FOTOS_PENDIENTES });
+            await req.recorrido.update({ status: RecorridoStatus.FOTOS_PENDIENTES });
 
             res.json({ message: 'Checklist finalizado, ahora sube las fotos' })
         } catch (error) {
@@ -299,8 +299,19 @@ export class CheckListController {
                 return
             }
 
-            await req.asignacion.update({ status: AsignacionStatus.EN_RUTA })
-            res.json({ message: 'Checklist Finalizado Correctamente' })
+            const nuevoStatus = Boolean(req.recorrido.saleAViaje)
+                ? RecorridoStatus.EN_RUTA  
+                : RecorridoStatus.COMPLETA;
+
+
+            await req.recorrido.update({ status: nuevoStatus });
+
+            res.json({ 
+                message: Boolean(req.recorrido.saleAViaje)
+                    ? 'Fotos finalizadas con éxito. Unidad puesta EN RUTA.'
+                    : 'Entrega finalizada con éxito. Unidad disponible en PATIO.',
+                status: nuevoStatus
+            });
 
         } catch (error) {
             res.status(500).json({ error: 'Error al finalizar el checklist' })
@@ -309,7 +320,9 @@ export class CheckListController {
 
     static registrarEntrada = async (req: Request, res: Response) => {
         const checklist = req.checklist;
-        const { observaciones } = req.body;
+        const { observaciones, cierreSinFotos, motivoOmision } = req.body;
+        const usuario = req.authenticatedUser;
+
         const FOTOS_ENTRADA_OBLIGATORIAS = [
             'entrada_frontal',
             'entrada_trasera',
@@ -318,29 +331,50 @@ export class CheckListController {
         ];
 
         try {
-            const imagenes = await ImagenesChecklist.findAll({
-                where: { checklistId: checklist.id },
-                attributes: ['fieldId']
-            });
+            if (!cierreSinFotos) {
+                const imagenes = await ImagenesChecklist.findAll({
+                    where: { checklistId: checklist.id },
+                    attributes: ['fieldId']
+                });
 
-            const fieldsSubidos = imagenes.map(img => img.fieldId);
-            const faltantes = FOTOS_ENTRADA_OBLIGATORIAS.filter(f => !fieldsSubidos.includes(f));
+                const fieldsSubidos = imagenes.map(img => img.fieldId);
+                const faltantes = FOTOS_ENTRADA_OBLIGATORIAS.filter(f => !fieldsSubidos.includes(f));
 
-            if(faltantes.length > 0) {
-                res.status(400).json({ error: 'Faltan fotos de entrada obligatorias', faltantes });
-                return;
+                if (faltantes.length > 0) {
+                    res.status(400).json({ 
+                        error: 'Faltan fotos de entrada obligatorias para el cierre normal', 
+                        faltantes 
+                    });
+                    return;
+                }
+            } else {
+                if (!observaciones?.trim()) {
+                    res.status(400).json({ 
+                        error: 'Para cerrar el viaje sin fotos, las observaciones/motivo son obligatorios' 
+                    });
+                    return;
+                }
             }
 
-            await req.asignacion.update({
-                status: AsignacionStatus.COMPLETA,
-                observaciones_entrada: observaciones || null
+            // Construir la nota de entrada con auditoría
+            const notaEntrada = cierreSinFotos
+                ? `[CIERRE SIN FOTOS - ${motivoOmision ?? 'OMISION_VIGILANCIA'} por ${usuario.name} ${usuario.lastname}]: ${observaciones}`
+                : (observaciones || 'Entrada normal con fotografías');
+
+            await req.recorrido.update({
+                status: RecorridoStatus.COMPLETA,
+                observaciones_entrada: notaEntrada
             });
 
-            res.json({ message: 'Entrada registrada y asignación completada con éxito' });
+            res.json({ 
+                message: cierreSinFotos 
+                    ? 'Viaje cerrado administrativamente sin fotos. Unidad libre en patio.' 
+                    : 'Entrada registrada y viaje completado con éxito' 
+            });
 
         } catch (error) {
-            console.error("Error al registrar entrada:", error)
-            res.status(500).json({ error: 'Error al registrar la entrada de la unidad' })
+            console.error("Error al registrar entrada:", error);
+            res.status(500).json({ error: 'Error al registrar la entrada de la unidad' });
         }
-    }
+    };
 }

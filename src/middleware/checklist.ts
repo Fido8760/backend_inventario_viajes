@@ -6,7 +6,7 @@ import Asignacion from "../models/Asignacion";
 import Unidad from "../models/Unidad";
 import ImagenesChecklist from "../models/ImagenesChecklist";
 import { Rol } from "../types/roles";
-import { AsignacionStatus } from "../types/estados-asignacion";
+import { RecorridoStatus } from "../types/estados-asignacion";
 import Pregunta, { TipoPregunta } from "../models/PreguntasChecklist";
 
 declare global {
@@ -136,27 +136,24 @@ export const validarChecklistExiste = async (req: Request, res: Response, next: 
     }
 }
 
-export const perteneceAAsignacion = async (req: Request, res: Response, next: NextFunction) => {
-    if(req.asignacion.id !== req.checklist.asignacionId) {
-        const error = new Error('Acción no válida')
-        res.status(403).json({error: error.message})
-        return
+export const perteneceARecorrido = async (req: Request, res: Response, next: NextFunction) => {
+    if (req.recorrido.id !== req.checklist.recorridoId) {
+        res.status(403).json({ error: 'Este checklist no pertenece al recorrido indicado' });
+        return;
     }
-
-    next()
-}
+    next();
+};
 
 export const verificarChecklistEditable = (req: Request, res: Response, next: NextFunction) => {
     const rol = req.authenticatedUser?.rol;
-    const status = req.asignacion.status;
-
+    const status = req.recorrido.status;
     if (rol === Rol.SISTEMAS) return next();
 
-    if (status === AsignacionStatus.COMPLETA) {
-        res.status(403).json({ error: 'No puedes modificar un checklist de una asignación ya finalizada' });
+    if (status === RecorridoStatus.COMPLETA) {
+        res.status(403).json({ error: 'No puedes modificar un checklist de un recorrido ya finalizado' });
         return;
     }
-    if (status === AsignacionStatus.EN_RUTA) {
+    if (status === RecorridoStatus.EN_RUTA) {
         res.status(403).json({ error: 'La unidad está en ruta, solo se puede registrar la entrada' });
         return;
     }
@@ -176,26 +173,25 @@ export const verificarChecklistCompleto = (req: Request, res: Response, next: Ne
     next();
 };
 
-export const verificarAsignacionEnRuta = (req: Request, res: Response, next: NextFunction) => {
-    if(req.asignacion.status !== AsignacionStatus.EN_RUTA){
+export const verificarRecorridoEnRuta = (req: Request, res: Response, next: NextFunction) => {
+    if (req.recorrido.status !== RecorridoStatus.EN_RUTA) {
         res.status(403).json({ error: 'Esta acción solo está disponible para unidades en ruta' });
         return; 
     }
-
     next();
-}
+};
 
 export const verificarPuedeSubirFotos = (req: Request, res: Response, next: NextFunction) => {
     const rol = req.authenticatedUser?.rol;
-    const status = req.asignacion.status;
+    const status = req.recorrido.status;
 
     if (rol === Rol.SISTEMAS) return next();
 
-    if (status === AsignacionStatus.COMPLETA) {
+    if (status === RecorridoStatus.COMPLETA) {
         res.status(403).json({ error: 'La asignación ya está finalizada' });
         return;
     }
-    if (rol === Rol.VIGILANTE && status !== AsignacionStatus.EN_RUTA) {
+    if (rol === Rol.VIGILANTE && status !== RecorridoStatus.EN_RUTA) {
         res.status(403).json({ error: 'El vigilante solo puede actuar sobre unidades en ruta' });
         return;
     }

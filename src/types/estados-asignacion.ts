@@ -1,4 +1,4 @@
-export enum AsignacionStatus {
+export enum RecorridoStatus {
     CREADA = 'CREADA',
     CHECKLIST_PENDIENTE = 'CHECKLIST_PENDIENTE',
     FOTOS_PENDIENTES = 'FOTOS_PENDIENTES',

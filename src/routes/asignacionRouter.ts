@@ -1,126 +1,66 @@
-import { Router } from 'express'
-import { AsignacionController } from '../controllers/AsignacionController'
-import { handleInputErrors } from '../middleware/validation'
-import { prevenirCreacionChecklistDuplicado, validarAsignacionId, validarasignacionInput, validarExitenciaViaje, validarParamOpcional, verificarEstadoAsignacion,  } from '../middleware/asignacion'
-import { CheckListController } from '../controllers/CheckListController'
-import { perteneceAAsignacion, validarChecklistExiste, validarChecklistId, validarChecklistInput, verificarAsignacionEnRuta, verificarChecklistCompleto, verificarChecklistEditable, verificarPuedeSubirFotos } from '../middleware/checklist'
-import { authenticate } from '../middleware/auth'
-import { authorizeRoles } from '../middleware/roles'
-import { Rol } from '../types/roles'
-import { AsignacionStatus } from '../types/estados-asignacion'
-
+import { Router } from 'express';
+import { AsignacionController } from '../controllers/AsignacionController';
+import { RecorridoController } from '../controllers/RecorridoController';
+import { handleInputErrors } from '../middleware/validation';
+import { validarAsignacionId, validarExistenciaAsignacion, validarAsignacionInput, verificarAsignacionVigente } from '../middleware/asignacion';
+import { authenticate } from '../middleware/auth';
+import { authorizeRoles } from '../middleware/roles';
+import { Rol } from '../types/roles';
+import recorridoRoutes from './recorridoRoutes'
 
 const router = Router()
-
 router.use(authenticate)
 
+// ── Catálogos y consultas generales ───────────────────────────
 router.get('/unidades', AsignacionController.getUnidades)
 router.get('/cajas', AsignacionController.getCajas)
 router.get('/operadores', AsignacionController.getOperadores)
-router.get('/en-ruta',
-    authorizeRoles(Rol.VIGILANTE, Rol.SISTEMAS, Rol.CAPTURISTA),
-    AsignacionController.getEnRuta
-)
-router.get('/contexto-unidad',
-    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
-    AsignacionController.getContextoUnidad
-)
+router.get('/en-ruta', authorizeRoles(Rol.VIGILANTE, Rol.SISTEMAS, Rol.CAPTURISTA), RecorridoController.getEnRuta)
+router.get('/contexto-unidad', authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS), AsignacionController.getContextoUnidad)
 
+// Param middleware para la Asignación
 router.param('asignacionId', validarAsignacionId)
-router.param('asignacionId', validarExitenciaViaje)
+router.param('asignacionId', validarExistenciaAsignacion)
 
-router.param('checklistId', validarChecklistId)
-router.param('checklistId', validarChecklistExiste)
-router.param('checklistId', perteneceAAsignacion)
-
-
-router.get('/', 
-    validarParamOpcional,
-    AsignacionController.getAll
-)
+// ── CRUD Asignación ──────────────────────────────────────────
+router.get('/', AsignacionController.getAll)
 
 router.post('/',
     authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
-    validarasignacionInput,
+    validarAsignacionInput,
     handleInputErrors,
     AsignacionController.create
 )
 
-router.get('/:asignacionId', 
-    AsignacionController.getByID
-)
 
+router.get('/:asignacionId', AsignacionController.getByID)
 
+router.get('/:asignacionId/estadisticas-checklist', AsignacionController.getEstadisticasChecklist);
 
 router.put('/:asignacionId',
-    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS), 
-    verificarChecklistEditable,
-    validarasignacionInput,
+    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
+    validarAsignacionInput,
     handleInputErrors,
-    AsignacionController.updateByID
-)
+    AsignacionController.update
+);
 
-router.delete('/:asignacionId',
-    authorizeRoles(Rol.SISTEMAS),
-    AsignacionController.deleteById
-)
 
-/** =========== Rutas para el checklist ============== */
-
-router.get('/:asignacionId/checklist/template',
-    CheckListController.getTemplate
-)
-
-/** Se crea un checklist vacío */
-router.post('/:asignacionId/checklist',
+router.patch('/:asignacionId/caja',
     authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
-    prevenirCreacionChecklistDuplicado,
-    handleInputErrors,
-    CheckListController.create
+    verificarAsignacionVigente,
+    AsignacionController.actualizarCaja
 )
 
-router.get('/:asignacionId/checklist/:checklistId',
-    CheckListController.getById
-)
-
-router.put('/:asignacionId/checklist/:checklistId',
+router.post('/:asignacionId/devolver',
     authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
-    verificarChecklistEditable,
-    validarChecklistInput,
-    handleInputErrors,
-    CheckListController.updateById
+    verificarAsignacionVigente,
+    AsignacionController.devolver
 )
 
-router.post('/:asignacionId/checklist/:checklistId/image',
-    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS, Rol.VIGILANTE),
-    verificarPuedeSubirFotos,
-    verificarChecklistCompleto,
-    CheckListController.uploadImage
-)
+router.delete('/:asignacionId', authorizeRoles(Rol.SISTEMAS), AsignacionController.deleteById)
 
-router.post('/:asignacionId/checklist/:checklistId/finalizar',
-    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
-    verificarEstadoAsignacion(AsignacionStatus.CHECKLIST_PENDIENTE, AsignacionStatus.FOTOS_PENDIENTES),
-    CheckListController.finalizarChecklist
-)
-
-router.post('/:asignacionId/checklist/:checklistId/finalizar-fotos',
-    authorizeRoles(Rol.CAPTURISTA, Rol.SISTEMAS),
-    verificarEstadoAsignacion(AsignacionStatus.FOTOS_PENDIENTES),
-    CheckListController.finalizarFotos
-)
-
-router.post('/:asignacionId/checklist/:checklistId/registrar-entrada',
-    authorizeRoles(Rol.VIGILANTE, Rol.SISTEMAS, Rol.CAPTURISTA),
-    verificarAsignacionEnRuta,
-    CheckListController.registrarEntrada
-)
-
-
-router.delete('/:asignacionId/checklist/:checklistId',
-    authorizeRoles(Rol.SISTEMAS),
-    verificarChecklistEditable,
-    CheckListController.deleteById
-)
+// ── Conexión con Recorridos ──────────────────────────────────
+// Ruta resultante: /api/asignaciones/:asignacionId/recorridos/...
+router.use('/:asignacionId/recorridos', recorridoRoutes)
 
 export default router

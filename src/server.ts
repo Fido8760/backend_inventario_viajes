@@ -9,13 +9,11 @@ import inspeccionesRouter from './routes/inspeccionRouter';
 import authRouter from './routes/authRouter'
 import dashboardRouter from './routes/dashboardRouter';
 import storageRouter from './routes/storageRouter';
-import searchRouter from './routes/searchRouter';
 import { seedPreguntas } from './seeders/preguntas.seed'
 
 async function connectDB() {
     try {
         await db.authenticate()
-        await db.sync()
         await seedPreguntas();
         console.log(colors.blue.bold('Conexión exitosa a BD'))
     } catch (error) {
@@ -37,7 +35,6 @@ app.use(morgan('dev'))
 app.use(express.json())
 
 app.use('/api/v1/inspecciones', inspeccionesRouter);
-app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/storage', storageRouter);
 app.use('/api/v1/assignments', asignacionRouter);
