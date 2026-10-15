@@ -129,7 +129,7 @@ export class AsignacionController {
             const unidades = await Unidad.findAll({
                 where,
                 include: [{ model: Marca, attributes: ['id', 'nombre'] }],
-                order: [[Sequelize.col('unidad.no_unidad'), 'ASC']]
+                order: [['no_unidad', 'ASC']]
             });
 
             res.json(unidades);
